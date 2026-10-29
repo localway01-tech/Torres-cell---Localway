@@ -1,0 +1,6 @@
+{
+  "name": "Torres Cell",
+  "description": "Torres Cell - Seu celular em boas mãos. Tecnologia, cuidado e confiança em um só lugar. Assistência técnica especializada e venda de celulares em Fortaleza.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
