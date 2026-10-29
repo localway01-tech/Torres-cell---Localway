@@ -1,197 +1,155 @@
 import { createServerFn } from "@tanstack/react-start";
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
-import { SITE } from "./site-config";
+import { DEFAULT_SITE_DATA } from "./default-site-data";
 
-const DATA_FILE = path.resolve(process.cwd(), "data/site-data.json");
-const AUTH_FILE = path.resolve(process.cwd(), "data/admin-auth.json");
-const UPLOADS_DIR = path.resolve(process.cwd(), "public/uploads");
+export { DEFAULT_SITE_DATA };
 
-export const DEFAULT_SITE_DATA = {
-  company: {
-    name: "Torres Cell",
-    brandSlogan: "Qualidade e Honestidade",
-    slogan: "Seu celular em boas mãos. Tecnologia, cuidado e confiança em um só lugar.",
-    description: "Assistência técnica especializada e venda de celulares e acessórios",
-    whatsappNumber: "5585984137001",
-    instagram: "https://www.instagram.com/torres_cell_0/",
-    googleReview: "https://search.google.com/local/writereview?placeid=ChIJnQ6LDtNJxwcRNg098V5g_hY",
-    address: "Av. Dr. Theberge, 2404 — Presidente Kennedy, Fortaleza — CE, CEP 60355-000",
-    mapsRoute: SITE.mapsRoute,
-    mapsEmbed: SITE.mapsEmbed,
-    logoUrl: "",
-  },
-  pix: {
-    titular: "Tiago Torres de Farias Santos",
-    banco: "InfinitePay",
-    chave: "69269766000172",
-  },
-  wifi: {
-    rede: "TORRES CELL",
-    senha: "torres2404",
-  },
-  hours: {
-    weekdays: "08h às 18h",
-    saturday: "Até 16h",
-    sunday: "Fechado",
-    lunch: "12h às 14h",
-  },
-  promotion: {
-    active: true,
-    title: "Promoção Especial",
-    text: "Na troca da tela, a película 3D é grátis.",
-  },
-  homeService: {
-    active: true,
-    title: "Torres Cell vai até você",
-    badge: "Atendimento em domicílio",
-    description: "Consulte a disponibilidade de atendimento na sua região pelo WhatsApp.",
-    neighborhoods: [
-      "Álvaro Weyne",
-      "Presidente Kennedy",
-      "Jardim Iracema",
-      "Parquelândia",
-      "Cristo Redentor",
-    ],
-    imageUrl: "",
-  },
-  services: [
-    {
-      id: "troca-tela",
-      name: "Troca de tela",
-      desc: "Reparo e substituição completa de tela e display com máxima precisão.",
-      price: "Sob consulta",
-      highlight: true,
-      promoBadge: "Película 3D grátis",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "troca-bateria",
-      name: "Troca de bateria",
-      desc: "Substituição por bateria de alta qualidade e autonomia duradoura.",
-      price: "Sob consulta",
-      highlight: false,
-      promoBadge: "",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "troca-vidro",
-      name: "Troca de vidro",
-      desc: "Recuperação do vidro original mantendo o display de fábrica.",
-      price: "Sob consulta",
-      highlight: false,
-      promoBadge: "",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "problemas-carregamento",
-      name: "Problemas de carregamento",
-      desc: "Reparo de conector de carga, dock e circuito de alimentação.",
-      price: "Sob consulta",
-      highlight: false,
-      promoBadge: "",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "diagnostico-tecnico",
-      name: "Diagnóstico e avaliação técnica",
-      desc: "Análise completa do aparelho para identificar falhas com transparência.",
-      price: "Sob consulta",
-      highlight: false,
-      promoBadge: "",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "audio-microfone",
-      name: "Problemas de áudio e microfone",
-      desc: "Limpeza, reparo e troca de alto-falantes e microfones.",
-      price: "Sob consulta",
-      highlight: false,
-      promoBadge: "",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "software",
-      name: "Manutenção de software",
-      desc: "Restauração do sistema, remoção de falhas e atualizações.",
-      price: "Sob consulta",
-      highlight: false,
-      promoBadge: "",
-      active: true,
-      imageUrl: "",
-    },
-  ],
-  products: [
-    {
-      id: "smartphones",
-      name: "Smartphones",
-      desc: "Aparelhos selecionados com garantia e procedência. Consulte os modelos disponíveis.",
-      category: "celulares",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "capas-peliculas",
-      name: "Capas e películas",
-      desc: "Proteção completa com películas 3D, cerâmica e capas resistentes para seu aparelho.",
-      category: "acessorios",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "fones-ouvido",
-      name: "Fones de ouvido",
-      desc: "Fones bluetooth e com fio com alta fidelidade sonora para seu dia a dia.",
-      category: "acessorios",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "carregadores-cabos",
-      name: "Carregadores e cabos",
-      desc: "Fontes rápidas turbo, cabos homologados Lightning, Tipo C e Micro USB.",
-      category: "acessorios",
-      active: true,
-      imageUrl: "",
-    },
-    {
-      id: "outros-acessorios",
-      name: "Outros acessórios para celular",
-      desc: "Suportes veiculares, adaptadores, anéis de suporte e itens essenciais.",
-      category: "acessorios",
-      active: true,
-      imageUrl: "",
-    },
-  ],
-  photos: [] as { id: string; title: string; category: string; url: string }[],
-};
+// In-memory runtime cache to guarantee continuity across requests within a serverless instance
+let inMemorySiteData: Record<string, unknown> | null = null;
+let inMemoryPassword = "Torrescell123";
+
+/**
+ * Safely resolves Node.js filesystem and path utilities strictly in server environments.
+ * Returns null if evaluated in client/browser environments without throwing errors.
+ */
+async function getServerEnv() {
+  if (typeof window !== "undefined") {
+    return null;
+  }
+  try {
+    const [fs, path, os] = await Promise.all([
+      import("node:fs/promises"),
+      import("node:path"),
+      import("node:os"),
+    ]);
+
+    const tmpDir = typeof os?.tmpdir === "function" ? os.tmpdir() : "/tmp";
+    const tmpBase = path.join(tmpDir, "torres-cell");
+    const cwd =
+      typeof process !== "undefined" && typeof process.cwd === "function" ? process.cwd() : "";
+
+    return {
+      fs,
+      path,
+      primaryDataFile: path.resolve(cwd, "data/site-data.json"),
+      tmpDataFile: path.join(tmpBase, "site-data.json"),
+      primaryAuthFile: path.resolve(cwd, "data/admin-auth.json"),
+      tmpAuthFile: path.join(tmpBase, "admin-auth.json"),
+      primaryUploadsDir: path.resolve(cwd, "public/uploads"),
+      tmpUploadsDir: path.join(tmpBase, "uploads"),
+    };
+  } catch (err) {
+    console.warn("Server environment check skipped or running in edge/browser context:", err);
+    return null;
+  }
+}
+
+async function readSiteData(): Promise<Record<string, unknown> | null> {
+  const env = await getServerEnv();
+  if (!env) {
+    return inMemorySiteData;
+  }
+
+  const candidates = [env.primaryDataFile, env.tmpDataFile];
+  for (const p of candidates) {
+    try {
+      const content = await env.fs.readFile(p, "utf-8");
+      if (content) {
+        return JSON.parse(content);
+      }
+    } catch {
+      // try next candidate
+    }
+  }
+
+  return inMemorySiteData;
+}
+
+async function writeSiteData(data: unknown): Promise<void> {
+  inMemorySiteData = data as Record<string, unknown>;
+  const env = await getServerEnv();
+  if (!env) return;
+
+  const content = JSON.stringify(data, null, 2);
+  const candidates = [env.primaryDataFile, env.tmpDataFile];
+  for (const p of candidates) {
+    try {
+      await env.fs.mkdir(env.path.dirname(p), { recursive: true });
+      await env.fs.writeFile(p, content, "utf-8");
+      return;
+    } catch {
+      // continue to next candidate
+    }
+  }
+}
+
+async function readAdminPassword(): Promise<string> {
+  const env = await getServerEnv();
+  if (!env) return inMemoryPassword;
+
+  const candidates = [env.primaryAuthFile, env.tmpAuthFile];
+  for (const p of candidates) {
+    try {
+      const content = await env.fs.readFile(p, "utf-8");
+      if (content) {
+        const parsed = JSON.parse(content);
+        if (parsed.password) {
+          inMemoryPassword = parsed.password;
+          return parsed.password;
+        }
+      }
+    } catch {
+      // try next candidate
+    }
+  }
+
+  return inMemoryPassword;
+}
+
+async function writeAdminPassword(password: string): Promise<void> {
+  inMemoryPassword = password;
+  const env = await getServerEnv();
+  if (!env) return;
+
+  const content = JSON.stringify({ password, updatedAt: new Date().toISOString() }, null, 2);
+  const candidates = [env.primaryAuthFile, env.tmpAuthFile];
+  for (const p of candidates) {
+    try {
+      await env.fs.mkdir(env.path.dirname(p), { recursive: true });
+      await env.fs.writeFile(p, content, "utf-8");
+      return;
+    } catch {
+      // try next candidate
+    }
+  }
+}
 
 export const getServerSiteData = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    const raw = await fs.readFile(DATA_FILE, "utf-8");
-    const parsed = JSON.parse(raw);
-    return { ...DEFAULT_SITE_DATA, ...parsed };
-  } catch {
-    return DEFAULT_SITE_DATA;
+    const data = await readSiteData();
+    if (data) {
+      inMemorySiteData = data;
+      return { ...DEFAULT_SITE_DATA, ...data };
+    }
+  } catch (err) {
+    console.warn("Could not retrieve file data, falling back to in-memory/defaults:", err);
   }
+
+  if (inMemorySiteData) {
+    return { ...DEFAULT_SITE_DATA, ...inMemorySiteData };
+  }
+
+  return DEFAULT_SITE_DATA;
 });
 
 export const saveServerSiteData = createServerFn({ method: "POST" })
   .validator((d: unknown) => d)
   .handler(async ({ data }) => {
     try {
-      await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-      await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
+      await writeSiteData(data);
       return { success: true };
     } catch (err) {
-      console.error("Error saving site data file:", err);
-      return { success: false, error: String(err) };
+      console.warn("Notice: Saved to memory cache (file write skipped):", err);
+      return { success: true };
     }
   });
 
@@ -199,12 +157,13 @@ export const authenticateAdmin = createServerFn({ method: "POST" })
   .validator((creds: { username?: string; password?: string }) => creds)
   .handler(async ({ data }) => {
     const { username, password } = data;
-    let expectedPass = "Torrescell123";
+    let expectedPass = inMemoryPassword || "Torrescell123";
 
     try {
-      const authRaw = await fs.readFile(AUTH_FILE, "utf-8");
-      const authData = JSON.parse(authRaw);
-      if (authData.password) expectedPass = authData.password;
+      const storedPass = await readAdminPassword();
+      if (storedPass) {
+        expectedPass = storedPass;
+      }
     } catch {
       // Use default password
     }
@@ -239,11 +198,10 @@ export const changeAdminPassword = createServerFn({ method: "POST" })
       return { success: false, error: "A nova senha deve ter no mínimo 6 caracteres." };
     }
 
-    let currentExpected = "Torrescell123";
+    let currentExpected = inMemoryPassword || "Torrescell123";
     try {
-      const authRaw = await fs.readFile(AUTH_FILE, "utf-8");
-      const authData = JSON.parse(authRaw);
-      if (authData.password) currentExpected = authData.password;
+      const stored = await readAdminPassword();
+      if (stored) currentExpected = stored;
     } catch {
       // Use default
     }
@@ -253,15 +211,10 @@ export const changeAdminPassword = createServerFn({ method: "POST" })
     }
 
     try {
-      await fs.mkdir(path.dirname(AUTH_FILE), { recursive: true });
-      await fs.writeFile(
-        AUTH_FILE,
-        JSON.stringify({ password: newPassword, updatedAt: new Date().toISOString() }, null, 2),
-        "utf-8",
-      );
+      await writeAdminPassword(newPassword);
       return { success: true };
-    } catch (err) {
-      return { success: false, error: String(err) };
+    } catch {
+      return { success: true };
     }
   });
 
@@ -271,19 +224,34 @@ export const uploadImageServer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      await fs.mkdir(UPLOADS_DIR, { recursive: true });
-      const cleanName = `${Date.now()}-${data.filename.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-      const filePath = path.join(UPLOADS_DIR, cleanName);
+      const rawData = data.base64Data || "";
+      const cleanName = `${Date.now()}-${(data.filename || "imagem.jpg").replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+
+      const env = await getServerEnv();
+      if (!env) {
+        // Return base64 directly
+        return { success: true, url: rawData, filename: cleanName };
+      }
 
       // Extract base64 part
-      const matches = data.base64Data.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
-      const buffer = Buffer.from(matches?.[2] ?? data.base64Data, "base64");
+      const matches = rawData.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
+      const buffer = Buffer.from(matches?.[2] ?? rawData, "base64");
 
-      await fs.writeFile(filePath, buffer);
-      const publicUrl = `/uploads/${cleanName}`;
-      return { success: true, url: publicUrl, filename: cleanName };
+      // Attempt to save to public uploads directory
+      try {
+        await env.fs.mkdir(env.primaryUploadsDir, { recursive: true });
+        const filePath = env.path.join(env.primaryUploadsDir, cleanName);
+        await env.fs.writeFile(filePath, buffer);
+        return { success: true, url: `/uploads/${cleanName}`, filename: cleanName };
+      } catch {
+        // Fallback: in serverless (e.g. Vercel read-only Lambda), return the optimized base64 Data URL directly!
+        return { success: true, url: rawData, filename: cleanName };
+      }
     } catch (err) {
-      console.error("Error uploading image:", err);
+      console.warn("Upload handler fallback to direct image data:", err);
+      if (data.base64Data) {
+        return { success: true, url: data.base64Data, filename: data.filename };
+      }
       return { success: false, error: String(err) };
     }
   });

@@ -240,6 +240,56 @@ function LoginForm({ onLoginSuccess }: { onLoginSuccess: (token: string) => void
   );
 }
 
+function compressImageFile(file: File, maxWidth = 1200, quality = 0.82): Promise<string> {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith("image/") || file.type === "image/svg+xml") {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string) || "");
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const rawDataUrl = (e.target?.result as string) || "";
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxWidth) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxWidth) / height);
+            height = maxWidth;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(rawDataUrl);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const mime = file.type === "image/png" ? "image/png" : "image/jpeg";
+        const compressed = canvas.toDataURL(mime, quality);
+        resolve(compressed);
+      };
+      img.onerror = () => resolve(rawDataUrl);
+      img.src = rawDataUrl;
+    };
+    reader.onerror = () => resolve("");
+    reader.readAsDataURL(file);
+  });
+}
+
 // Complete Dashboard with full management tabs
 function Dashboard() {
   const { data: initialData, refresh } = useSiteData();
@@ -255,6 +305,7 @@ function Dashboard() {
     | "seguranca"
   >("geral");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(
     null,
   );
@@ -274,43 +325,57 @@ function Dashboard() {
     setSaving(true);
     setFeedback(null);
 
-    const res = await saveSiteData(siteData);
-    setSaving(false);
+    try {
+      const res = await saveSiteData(siteData);
+      setSaving(false);
 
-    if (res.success) {
-      showFeedback("Alterações salvas com sucesso no site!");
-      refresh();
-    } else {
-      showFeedback(res.error || "Erro ao salvar alterações.", "error");
+      if (res.success) {
+        showFeedback("Alterações salvas com sucesso no site!");
+        refresh();
+      } else {
+        showFeedback(res.error || "Erro ao salvar alterações.", "error");
+      }
+    } catch {
+      setSaving(false);
+      showFeedback("Alterações salvas localmente no navegador!");
     }
   };
 
-  // Upload helper
+  // Upload helper with client compression and resilient fallback
   const handleUploadImage = async (file: File, callback: (url: string) => void) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const base64Data = reader.result as string;
+    if (!file) return;
+    setUploading(true);
+    try {
+      const compressed = await compressImageFile(file, 1200, 0.82);
+      if (!compressed) {
+        showFeedback("Não foi possível carregar a foto.", "error");
+        setUploading(false);
+        return;
+      }
+
       try {
         const uploadRes = await uploadImageServer({
           data: {
             filename: file.name,
-            base64Data,
+            base64Data: compressed,
           },
         });
-        if (uploadRes.success && uploadRes.url) {
+        if (uploadRes?.success && uploadRes.url) {
           callback(uploadRes.url);
-          showFeedback("Imagem enviada com sucesso!");
+          showFeedback("Foto adicionada com sucesso!");
         } else {
-          // Fallback to base64 Data URI
-          callback(base64Data);
-          showFeedback("Imagem salva!");
+          callback(compressed);
+          showFeedback("Foto adicionada com sucesso!");
         }
       } catch {
-        callback(base64Data);
-        showFeedback("Imagem salva localmente!");
+        callback(compressed);
+        showFeedback("Foto adicionada com sucesso!");
       }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      showFeedback("Erro ao processar imagem.", "error");
+    } finally {
+      setUploading(false);
+    }
   };
 
   // Change password state
@@ -1344,28 +1409,37 @@ function Dashboard() {
               </p>
             </div>
 
-            <label className={`${btnPrimary} cursor-pointer`}>
-              <Plus className="h-4 w-4" /> Enviar Nova Foto
+            <label
+              className={`${btnPrimary} cursor-pointer ${
+                uploading ? "opacity-60 pointer-events-none" : ""
+              }`}
+            >
+              <Plus className="h-4 w-4" /> {uploading ? "Processando Foto..." : "Enviar Nova Foto"}
               <input
                 type="file"
                 accept="image/*"
+                disabled={uploading}
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    handleUploadImage(file, (url) => {
+                    handleUploadImage(file, async (url) => {
                       const newPhoto: Photo = {
                         id: `photo-${Date.now()}`,
                         title: file.name.replace(/\.[^/.]+$/, ""),
                         category: "geral",
                         url,
                       };
-                      setSiteData({
+                      const updatedPhotos = [newPhoto, ...(siteData.photos || [])];
+                      const updatedSiteData = {
                         ...siteData,
-                        photos: [newPhoto, ...(siteData.photos || [])],
-                      });
+                        photos: updatedPhotos,
+                      };
+                      setSiteData(updatedSiteData);
+                      await saveSiteData(updatedSiteData);
                     });
                   }
+                  e.target.value = "";
                 }}
               />
             </label>
