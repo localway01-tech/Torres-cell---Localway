@@ -191,7 +191,6 @@ function Index() {
 
   const [pixModalOpen, setPixModalOpen] = useState(false);
   const [wifiModalOpen, setWifiModalOpen] = useState(false);
-  const [locationModalOpen, setLocationModalOpen] = useState(false);
 
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedWifi, setCopiedWifi] = useState(false);
@@ -289,7 +288,6 @@ function Index() {
       if (e.key === "Escape") {
         setPixModalOpen(false);
         setWifiModalOpen(false);
-        setLocationModalOpen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -313,8 +311,8 @@ function Index() {
     {
       label: "Como chegar",
       icon: MapPin,
-      isAction: true,
-      onClick: () => setLocationModalOpen(true),
+      href: data.company.mapsRoute || SITE.mapsRoute,
+      isAction: false,
     },
     { label: "Pix", icon: QrCode, isAction: true, onClick: () => setPixModalOpen(true) },
     { label: "Wi-Fi", icon: Wifi, isAction: true, onClick: () => setWifiModalOpen(true) },
@@ -832,45 +830,6 @@ function Index() {
             </CTA>
           </div>
         </section>
-
-        {/* Localização e Como Chegar */}
-        <section id="localizacao" className="mt-20 scroll-mt-6">
-          <SectionHead
-            title="Localização"
-            sub="Venha até a nossa loja no bairro Presidente Kennedy em Fortaleza."
-          />
-
-          <div className="reveal overflow-hidden rounded-3xl border border-border bg-card shadow-card">
-            <iframe
-              title="Mapa de localização da Torres Cell"
-              src={data.company.mapsEmbed || SITE.mapsEmbed}
-              loading="lazy"
-              className="h-72 w-full border-0 grayscale-[40%]"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-
-            <div className="p-6 sm:p-8">
-              <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-                <div>
-                  <h3 className="flex items-center gap-2 text-xl font-bold">
-                    <MapPin className="h-5 w-5 text-primary" /> Torres Cell
-                  </h3>
-                  <p className="mt-2 text-muted-foreground">
-                    {data.company.address || SITE.address}
-                  </p>
-                </div>
-
-                {/* Botão padronizado 'Como chegar' */}
-                <CTA
-                  href={data.company.mapsRoute || SITE.mapsRoute}
-                  className="w-full shrink-0 md:w-auto"
-                >
-                  <Navigation className="h-4 w-4" /> Como chegar
-                </CTA>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Rodapé Simplificado */}
@@ -909,61 +868,6 @@ function Index() {
           </div>
         </div>
       </footer>
-
-      {/* Pop-up / Modal Localização Limpo */}
-      {locationModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
-            onClick={() => setLocationModalOpen(false)}
-          />
-
-          {/* Dialog content */}
-          <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-primary/40 bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95">
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <div className="flex items-center gap-2.5">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-red text-primary-foreground shadow-red">
-                  <MapPin className="h-5 w-5" />
-                </span>
-                <div>
-                  <h3 className="font-bold">Localização</h3>
-                  <p className="text-xs text-muted-foreground">Torres Cell</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setLocationModalOpen(false)}
-                aria-label="Fechar"
-                className="rounded-lg p-2 text-muted-foreground hover:bg-secondary hover:text-foreground"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mt-5 space-y-4">
-              <div className="rounded-xl border border-border bg-secondary/80 p-4">
-                <p className="text-xs font-medium text-muted-foreground">Endereço da loja</p>
-                <p className="mt-1 font-semibold text-foreground leading-relaxed">
-                  {data.company.address || SITE.address}
-                </p>
-              </div>
-
-              <CTA
-                href={data.company.mapsRoute || SITE.mapsRoute}
-                className="w-full text-base"
-                onClick={() => setLocationModalOpen(false)}
-              >
-                <Navigation className="h-4 w-4" /> Como chegar
-              </CTA>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Pop-up / Modal Pix Limpo */}
       {pixModalOpen && (
