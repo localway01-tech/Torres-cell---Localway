@@ -44,24 +44,24 @@
   --card-foreground: #09090b;
   --popover: #ffffff;
   --popover-foreground: #09090b;
-  --primary: #dc2626;
-  --primary-glow: #ef4444;
+  --primary: #09090b;
+  --primary-glow: #27272a;
   --primary-foreground: #ffffff;
   --secondary: #f4f4f5;
   --secondary-foreground: #18181b;
   --muted: #f4f4f5;
   --muted-foreground: #52525b;
-  --accent: #fef2f2;
-  --accent-foreground: #991b1b;
-  --destructive: #dc2626;
+  --accent: #f4f4f5;
+  --accent-foreground: #09090b;
+  --destructive: #18181b;
   --destructive-foreground: #ffffff;
   --whatsapp: #16a34a;
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #dc2626;
-  --gradient-red: linear-gradient(135deg, #dc2626, #b91c1c);
-  --shadow-red: 0 10px 25px -5px rgba(220, 38, 38, 0.25);
-  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  --ring: #09090b;
+  --gradient-red: linear-gradient(135deg, #18181b, #09090b);
+  --shadow-red: 0 4px 14px 0 rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 2px 10px -1px rgba(0, 0, 0, 0.05);
 }
 
 @layer base {
@@ -86,10 +86,10 @@
 }
 
 @utility bg-gradient-red {
-  background-image: var(--gradient-red);
+  background-color: #09090b;
 }
 @utility shadow-red {
-  box-shadow: var(--shadow-red);
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.12);
 }
 @utility shadow-card {
   box-shadow: var(--shadow-card);

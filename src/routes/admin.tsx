@@ -19,15 +19,18 @@ import {
   MapPin,
   Lock,
   X,
-  Instagram,
+  ArrowUp,
+  ArrowDown,
+  Layers,
 } from "lucide-react";
 import {
   useSiteData,
   saveSiteData,
+  DEFAULT_SITE_DATA,
   type SiteData,
   type ServiceItem,
-  type ProductItem,
-  type InstagramPost,
+  type ProductCategory,
+  type CatalogProduct,
 } from "@/lib/site-data";
 import { authenticateAdmin, uploadImageServer } from "@/lib/server-api";
 import symbolLogo from "@/assets/logo-symbol.png";
@@ -45,11 +48,11 @@ export const Route = createFileRoute("/admin")({
 });
 
 const inputClass =
-  "w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-red-600 focus:ring-1 focus:ring-red-600 placeholder:text-zinc-400";
+  "w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 placeholder:text-zinc-400";
 const btnPrimary =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-red px-5 py-2.5 font-semibold text-white shadow-red transition hover:brightness-110 active:scale-95 disabled:opacity-50 cursor-pointer";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-black active:scale-95 disabled:opacity-50 cursor-pointer";
 const btnSecondary =
-  "inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:border-red-500 hover:text-red-600 active:scale-95 cursor-pointer";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950 active:scale-95 cursor-pointer";
 
 const ADMIN_SESSION_KEY = "torres_cell_admin_auth_v1";
 
@@ -83,20 +86,20 @@ function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50/80 px-4 py-8 text-zinc-900">
+    <div className="min-h-screen bg-zinc-50 px-4 py-8 text-zinc-900">
       <div className="mx-auto max-w-4xl">
         {/* Top bar */}
         <div className="mb-6 flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-red-600 transition"
+            className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-zinc-950 transition"
           >
             <ArrowLeft className="h-4 w-4" /> Voltar ao site público
           </Link>
           {sessionToken && (
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:border-red-500 hover:text-red-600 shadow-sm transition"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:border-zinc-900 hover:text-zinc-950 shadow-sm transition cursor-pointer"
             >
               <LogOut className="h-3.5 w-3.5" /> Sair
             </button>
@@ -163,20 +166,14 @@ function LoginForm({ onLoginSuccess }: { onLoginSuccess: (token: string) => void
   return (
     <div className="mx-auto mt-12 max-w-md">
       <div className="text-center">
-        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-zinc-900 border border-zinc-700/60 p-4 shadow-lg">
-          <img
-            src={symbolLogo}
-            alt="Torres Cell"
-            width={120}
-            height={120}
-            className="h-14 w-auto object-contain"
-          />
-        </div>
-        <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-950">
-          Painel <span className="text-red-600">Admin</span>
+        <h1 className="font-display text-3xl font-black tracking-tight text-zinc-950 uppercase">
+          TORRES CELL
         </h1>
+        <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          Painel Administrativo
+        </p>
         <p className="mt-2 text-sm text-zinc-600">
-          Acesso exclusivo para gerenciamento da Torres Cell.
+          Acesso restrito para gerenciamento do mini site.
         </p>
       </div>
 
@@ -218,14 +215,14 @@ function LoginForm({ onLoginSuccess }: { onLoginSuccess: (token: string) => void
           <div
             className={`flex items-center gap-2 rounded-xl p-3 text-sm ${
               msg.type === "error"
-                ? "bg-red-50 text-red-700 border border-red-200"
-                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                ? "bg-zinc-100 text-zinc-900 border border-zinc-300"
+                : "bg-zinc-100 text-zinc-900 border border-zinc-900"
             }`}
           >
             {msg.type === "error" ? (
-              <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+              <AlertCircle className="h-4 w-4 shrink-0 text-zinc-900" />
             ) : (
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-zinc-900" />
             )}
             <span>{msg.text}</span>
           </div>
@@ -236,7 +233,7 @@ function LoginForm({ onLoginSuccess }: { onLoginSuccess: (token: string) => void
         </button>
 
         <p className="text-center text-xs text-zinc-500 mt-4">
-          Área restrita. Não é permitido cadastro de novos usuários.
+          Área restrita aos administradores autorizados da Torres Cell.
         </p>
       </form>
     </div>
@@ -296,10 +293,20 @@ function compressImageFile(file: File, maxWidth = 1200, quality = 0.82): Promise
 // 6 Dedicated Admin Sections
 function Dashboard() {
   const { data: initialData, refresh } = useSiteData();
-  const [siteData, setSiteData] = useState<SiteData>(initialData);
+  const [siteData, setSiteData] = useState<SiteData>(() => ({
+    ...initialData,
+    categories: initialData.categories?.length
+      ? initialData.categories
+      : DEFAULT_SITE_DATA.categories,
+    catalogProducts: initialData.catalogProducts?.length
+      ? initialData.catalogProducts
+      : DEFAULT_SITE_DATA.catalogProducts,
+  }));
+
   const [activeTab, setActiveTab] = useState<
     "contato" | "pix-wifi" | "horarios" | "servicos" | "produtos" | "domicilio"
   >("contato");
+  const [selectedAdminCatId, setSelectedAdminCatId] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(
     null,
@@ -307,8 +314,25 @@ function Dashboard() {
 
   // Sync when initial data loads
   useEffect(() => {
-    if (initialData) setSiteData(initialData);
+    if (initialData) {
+      setSiteData({
+        ...initialData,
+        categories: initialData.categories?.length
+          ? initialData.categories
+          : DEFAULT_SITE_DATA.categories,
+        catalogProducts: initialData.catalogProducts?.length
+          ? initialData.catalogProducts
+          : DEFAULT_SITE_DATA.catalogProducts,
+      });
+    }
   }, [initialData]);
+
+  // Set default selected category for products tab
+  useEffect(() => {
+    if (siteData.categories && siteData.categories.length > 0 && !selectedAdminCatId) {
+      setSelectedAdminCatId(siteData.categories[0].id);
+    }
+  }, [siteData.categories, selectedAdminCatId]);
 
   const showFeedback = (text: string, type: "success" | "error" = "success") => {
     setFeedback({ type, text });
@@ -332,7 +356,7 @@ function Dashboard() {
       }
     } catch {
       setSaving(false);
-      showFeedback("Alterações salvas localmente no navegador!");
+      showFeedback("Alterações salvas com sucesso!");
     }
   };
 
@@ -374,17 +398,23 @@ function Dashboard() {
     { id: "pix-wifi", label: "Pix e Wi-Fi", icon: QrCode },
     { id: "horarios", label: "Horários de Funcionamento", icon: Clock },
     { id: "servicos", label: "Serviços", icon: Wrench },
-    { id: "produtos", label: "Produtos", icon: Smartphone },
+    { id: "produtos", label: "Produtos e Categorias", icon: Smartphone },
     { id: "domicilio", label: "Atendimento em Domicílio", icon: Home },
   ] as const;
+
+  const currentCategory =
+    siteData.categories.find((c) => c.id === selectedAdminCatId) || siteData.categories[0];
+  const productsInCurrentCat = (siteData.catalogProducts || []).filter(
+    (p) => currentCategory && p.categoryId === currentCategory.id,
+  );
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-zinc-950">
-            Gerenciamento <span className="text-red-600">Torres Cell</span>
+          <h1 className="text-3xl font-black tracking-tight text-zinc-950 uppercase">
+            Gerenciamento Torres Cell
           </h1>
           <p className="text-sm text-zinc-600">
             Todas as alterações salvas aqui são refletidas imediatamente no site público.
@@ -406,14 +436,14 @@ function Dashboard() {
         <div
           className={`flex items-center gap-2 rounded-2xl p-4 text-sm font-semibold shadow-sm ${
             feedback.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+              ? "bg-zinc-100 text-zinc-900 border border-zinc-900"
+              : "bg-zinc-100 text-zinc-900 border border-zinc-400"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-zinc-900" />
           ) : (
-            <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
+            <AlertCircle className="h-5 w-5 shrink-0 text-zinc-900" />
           )}
           <span>{feedback.text}</span>
         </div>
@@ -431,7 +461,7 @@ function Dashboard() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                 isActive
-                  ? "bg-gradient-red text-white shadow-red"
+                  ? "bg-zinc-900 text-white shadow-sm"
                   : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950"
               }`}
             >
@@ -447,7 +477,7 @@ function Dashboard() {
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5">
           <div>
             <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-red-600" /> Contato e Localização
+              <MapPin className="h-5 w-5 text-zinc-900" /> Contato e Localização
             </h2>
             <p className="text-xs text-zinc-500 mt-1">
               Gerencie canais de contato, endereço e rotas para facilitar o acesso dos clientes à
@@ -550,7 +580,7 @@ function Dashboard() {
           {/* Pix Card */}
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
             <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
-              <QrCode className="h-5 w-5 text-red-600" /> Configuração do Pix
+              <QrCode className="h-5 w-5 text-zinc-900" /> Configuração do Pix
             </h2>
             <p className="text-xs text-zinc-500">
               Estes dados são exibidos no modal pop-up de Pix para que o cliente copie a chave com
@@ -611,7 +641,7 @@ function Dashboard() {
           {/* Wi-Fi Card */}
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
             <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
-              <Wifi className="h-5 w-5 text-red-600" /> Configuração do Wi-Fi
+              <Wifi className="h-5 w-5 text-zinc-900" /> Configuração do Wi-Fi
             </h2>
             <p className="text-xs text-zinc-500">
               Estes dados são exibidos no modal de Wi-Fi para que os clientes na loja copiem a senha
@@ -660,7 +690,7 @@ function Dashboard() {
         <div className="space-y-6">
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
             <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
-              <Clock className="h-5 w-5 text-red-600" /> Horário de Funcionamento
+              <Clock className="h-5 w-5 text-zinc-900" /> Horário de Funcionamento
             </h2>
             <p className="text-xs text-zinc-500">
               Ajuste os horários semanais, do sábado, domingo e a pausa para almoço da equipe.
@@ -733,7 +763,7 @@ function Dashboard() {
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-red-600" /> Promoção em Destaque
+                <Sparkles className="h-5 w-5 text-zinc-900" /> Promoção em Destaque
               </h2>
               <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-zinc-700">
                 <input
@@ -745,7 +775,7 @@ function Dashboard() {
                       promotion: { ...siteData.promotion, active: e.target.checked },
                     })
                   }
-                  className="rounded border-zinc-300 accent-red-600 h-4 w-4 cursor-pointer"
+                  className="rounded border-zinc-300 accent-zinc-900 h-4 w-4 cursor-pointer"
                 />
                 Ativar banner de promoção
               </label>
@@ -770,17 +800,17 @@ function Dashboard() {
         </div>
       )}
 
-      {/* SEÇÃO 4: Serviços */}
+      {/* SEÇÃO 4: Serviços (SEM FOTOS - Conforme Instrução Oficial) */}
       {activeTab === "servicos" && (
         <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
-                <Wrench className="h-5 w-5 text-red-600" /> Serviços de Assistência Técnica
+                <Wrench className="h-5 w-5 text-zinc-900" /> Serviços de Assistência Técnica
               </h2>
               <p className="text-xs text-zinc-500">
-                Adicione, edite dados, adicione ou substitua fotos individuais e controle a
-                visibilidade de cada serviço.
+                Edite os dados, preços e status de visibilidade de cada serviço. Os serviços
+                utilizam ícones padronizados na página inicial.
               </p>
             </div>
 
@@ -791,7 +821,7 @@ function Dashboard() {
                 const newService: ServiceItem = {
                   id: newId,
                   name: "Novo Serviço",
-                  desc: "Descrição detalhada do serviço.",
+                  desc: "Descrição clara e transparente do serviço prestado.",
                   price: "Sob consulta",
                   highlight: false,
                   promoBadge: "",
@@ -812,7 +842,7 @@ function Dashboard() {
             {siteData.services.map((service, index) => (
               <div
                 key={service.id}
-                className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 transition hover:border-red-300"
+                className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 transition hover:border-zinc-400"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1 space-y-3">
@@ -864,75 +894,6 @@ function Dashboard() {
                       />
                     </div>
 
-                    {/* Foto individual do serviço: preview, URL, upload e remoção */}
-                    <div className="rounded-xl border border-zinc-200 bg-white p-3 space-y-2">
-                      <label className="block text-[11px] font-semibold text-zinc-700">
-                        Foto do Serviço
-                      </label>
-
-                      <div className="flex flex-wrap items-center gap-3">
-                        {service.imageUrl ? (
-                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
-                            <img
-                              src={service.imageUrl}
-                              alt={service.name}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-400">
-                            <Wrench className="h-5 w-5" />
-                          </div>
-                        )}
-
-                        <div className="flex-1 min-w-[200px]">
-                          <input
-                            className={inputClass}
-                            placeholder="Link da imagem ou envie pelo botão"
-                            value={service.imageUrl || ""}
-                            onChange={(e) => {
-                              const updated = [...siteData.services];
-                              updated[index] = { ...service, imageUrl: e.target.value };
-                              setSiteData({ ...siteData, services: updated });
-                            }}
-                          />
-                        </div>
-
-                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-red-500 hover:text-red-600 transition">
-                          <Upload className="h-3.5 w-3.5" /> Enviar foto
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleUploadImage(file, (url) => {
-                                  const updated = [...siteData.services];
-                                  updated[index] = { ...service, imageUrl: url };
-                                  setSiteData({ ...siteData, services: updated });
-                                });
-                              }
-                            }}
-                          />
-                        </label>
-
-                        {service.imageUrl && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = [...siteData.services];
-                              updated[index] = { ...service, imageUrl: "" };
-                              setSiteData({ ...siteData, services: updated });
-                            }}
-                            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 transition"
-                          >
-                            <X className="h-3.5 w-3.5" /> Remover
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
                     {/* Toggles */}
                     <div className="flex flex-wrap items-center gap-4 pt-1">
                       <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-zinc-700">
@@ -944,7 +905,7 @@ function Dashboard() {
                             updated[index] = { ...service, active: e.target.checked };
                             setSiteData({ ...siteData, services: updated });
                           }}
-                          className="rounded border-zinc-300 accent-red-600 h-3.5 w-3.5 cursor-pointer"
+                          className="rounded border-zinc-300 accent-zinc-900 h-3.5 w-3.5 cursor-pointer"
                         />
                         Exibir no site
                       </label>
@@ -958,7 +919,7 @@ function Dashboard() {
                             updated[index] = { ...service, highlight: e.target.checked };
                             setSiteData({ ...siteData, services: updated });
                           }}
-                          className="rounded border-zinc-300 accent-red-600 h-3.5 w-3.5 cursor-pointer"
+                          className="rounded border-zinc-300 accent-zinc-900 h-3.5 w-3.5 cursor-pointer"
                         />
                         Destaque promocional
                       </label>
@@ -975,7 +936,7 @@ function Dashboard() {
                         });
                       }
                     }}
-                    className="self-end sm:self-start rounded-lg p-2 text-zinc-400 hover:bg-red-50 hover:text-red-600 transition"
+                    className="self-end sm:self-start rounded-lg p-2 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-900 transition cursor-pointer"
                     title="Excluir serviço"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -987,206 +948,501 @@ function Dashboard() {
         </div>
       )}
 
-      {/* SEÇÃO 5: Produtos */}
+      {/* SEÇÃO 5: Produtos e Categorias (Catálogo Interativo Completo) */}
       {activeTab === "produtos" && (
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5">
+        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
-                <Smartphone className="h-5 w-5 text-red-600" /> Celulares e Acessórios
+                <Smartphone className="h-5 w-5 text-zinc-900" /> Catálogo: Categorias e Produtos
               </h2>
               <p className="text-xs text-zinc-500">
-                Cadastre ou atualize fotos individuais, categorias e descrições dos produtos da
-                loja.
+                Gerencie categorias, adicione produtos, envie fotos individuais e organize a ordem
+                de exibição do mini catálogo.
               </p>
             </div>
 
             <button
               type="button"
               onClick={() => {
-                const newId = `prod-${Date.now()}`;
-                const newProduct: ProductItem = {
-                  id: newId,
-                  name: "Novo Item",
-                  desc: "Descrição do produto ou acessório.",
-                  category: "acessorios",
-                  active: true,
+                const newCatId = `cat-${Date.now()}`;
+                const newCat: ProductCategory = {
+                  id: newCatId,
+                  name: "Nova Categoria",
+                  description: "Descrição da categoria.",
+                  imageUrl: "",
+                  order: (siteData.categories?.length || 0) + 1,
                 };
+                const updatedCats = [...(siteData.categories || []), newCat];
                 setSiteData({
                   ...siteData,
-                  products: [...siteData.products, newProduct],
+                  categories: updatedCats,
                 });
+                setSelectedAdminCatId(newCatId);
               }}
               className={btnSecondary}
             >
-              <Plus className="h-4 w-4" /> Adicionar Item
+              <Plus className="h-4 w-4" /> Adicionar Categoria
             </button>
           </div>
 
-          <div className="space-y-4">
-            {siteData.products.map((product, index) => (
-              <div
-                key={product.id}
-                className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 transition hover:border-red-300"
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex-1 space-y-3">
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
-                          Nome do Produto
-                        </label>
-                        <input
-                          className={inputClass}
-                          value={product.name}
-                          onChange={(e) => {
-                            const updated = [...siteData.products];
-                            updated[index] = { ...product, name: e.target.value };
-                            setSiteData({ ...siteData, products: updated });
-                          }}
-                        />
-                      </div>
+          {/* Abas / Seletor de Categorias */}
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 space-y-4">
+            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-600">
+              Categorias Cadastradas
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {(siteData.categories || []).map((cat) => {
+                const count = (siteData.catalogProducts || []).filter(
+                  (p) => p.categoryId === cat.id,
+                ).length;
+                const isSelected = (currentCategory?.id || "") === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedAdminCatId(cat.id)}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-zinc-900 text-white shadow-sm"
+                        : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
+                    }`}
+                  >
+                    <span>{cat.name}</span>
+                    <span
+                      className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                        isSelected ? "bg-zinc-700 text-white" : "bg-zinc-100 text-zinc-700"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
-                      <div>
-                        <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
-                          Categoria
-                        </label>
-                        <select
-                          className={inputClass}
-                          value={product.category}
-                          onChange={(e) => {
-                            const updated = [...siteData.products];
-                            updated[index] = { ...product, category: e.target.value };
-                            setSiteData({ ...siteData, products: updated });
-                          }}
-                        >
-                          <option value="celulares">Smartphones / Celulares</option>
-                          <option value="acessorios">Acessórios para celular</option>
-                          <option value="audio">Áudio e fones</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
-                        Descrição
-                      </label>
-                      <input
-                        className={inputClass}
-                        value={product.desc}
-                        onChange={(e) => {
-                          const updated = [...siteData.products];
-                          updated[index] = { ...product, desc: e.target.value };
-                          setSiteData({ ...siteData, products: updated });
-                        }}
-                      />
-                    </div>
-
-                    {/* Foto individual do produto: preview, URL, upload e remoção */}
-                    <div className="rounded-xl border border-zinc-200 bg-white p-3 space-y-2">
-                      <label className="block text-[11px] font-semibold text-zinc-700">
-                        Foto do Produto
-                      </label>
-
-                      <div className="flex flex-wrap items-center gap-3">
-                        {product.imageUrl ? (
-                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
-                            <img
-                              src={product.imageUrl}
-                              alt={product.name}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-400">
-                            <Smartphone className="h-5 w-5" />
-                          </div>
-                        )}
-
-                        <div className="flex-1 min-w-[200px]">
-                          <input
-                            className={inputClass}
-                            value={product.imageUrl || ""}
-                            placeholder="Link da imagem ou envie pelo botão"
-                            onChange={(e) => {
-                              const updated = [...siteData.products];
-                              updated[index] = { ...product, imageUrl: e.target.value };
-                              setSiteData({ ...siteData, products: updated });
-                            }}
-                          />
-                        </div>
-
-                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-red-500 hover:text-red-600 transition">
-                          <Upload className="h-3.5 w-3.5" /> Enviar foto
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleUploadImage(file, (url) => {
-                                  const updated = [...siteData.products];
-                                  updated[index] = { ...product, imageUrl: url };
-                                  setSiteData({ ...siteData, products: updated });
-                                });
-                              }
-                            }}
-                          />
-                        </label>
-
-                        {product.imageUrl && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = [...siteData.products];
-                              updated[index] = { ...product, imageUrl: "" };
-                              setSiteData({ ...siteData, products: updated });
-                            }}
-                            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 transition"
-                          >
-                            <X className="h-3.5 w-3.5" /> Remover
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-zinc-700">
-                        <input
-                          type="checkbox"
-                          checked={product.active}
-                          onChange={(e) => {
-                            const updated = [...siteData.products];
-                            updated[index] = { ...product, active: e.target.checked };
-                            setSiteData({ ...siteData, products: updated });
-                          }}
-                          className="rounded border-zinc-300 accent-red-600 h-3.5 w-3.5 cursor-pointer"
-                        />
-                        Exibir no site
-                      </label>
-                    </div>
-                  </div>
-
+            {/* Editor da Categoria Selecionada */}
+            {currentCategory && (
+              <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-zinc-950">
+                    Editar Categoria: {currentCategory.name}
+                  </h3>
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm(`Excluir item "${product.name}"?`)) {
+                      if (
+                        confirm(
+                          `Excluir a categoria "${currentCategory.name}" e seus produtos associados?`,
+                        )
+                      ) {
+                        const newCats = siteData.categories.filter(
+                          (c) => c.id !== currentCategory.id,
+                        );
+                        const newProds = siteData.catalogProducts.filter(
+                          (p) => p.categoryId !== currentCategory.id,
+                        );
                         setSiteData({
                           ...siteData,
-                          products: siteData.products.filter((p) => p.id !== product.id),
+                          categories: newCats,
+                          catalogProducts: newProds,
                         });
+                        if (newCats.length > 0) {
+                          setSelectedAdminCatId(newCats[0].id);
+                        }
                       }
                     }}
-                    className="self-end sm:self-start rounded-lg p-2 text-zinc-400 hover:bg-red-50 hover:text-red-600 transition"
-                    title="Excluir produto"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-500 hover:text-zinc-950 cursor-pointer"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" /> Excluir Categoria
                   </button>
                 </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
+                      Nome da Categoria
+                    </label>
+                    <input
+                      className={inputClass}
+                      value={currentCategory.name}
+                      onChange={(e) => {
+                        const newCats = siteData.categories.map((c) =>
+                          c.id === currentCategory.id ? { ...c, name: e.target.value } : c,
+                        );
+                        setSiteData({ ...siteData, categories: newCats });
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
+                      Descrição Resumida
+                    </label>
+                    <input
+                      className={inputClass}
+                      value={currentCategory.description || ""}
+                      onChange={(e) => {
+                        const newCats = siteData.categories.map((c) =>
+                          c.id === currentCategory.id ? { ...c, description: e.target.value } : c,
+                        );
+                        setSiteData({ ...siteData, categories: newCats });
+                      }}
+                    />
+                  </div>
+
+                  {/* Foto de Capa da Categoria */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
+                      Foto de Capa da Categoria
+                    </label>
+                    <div className="flex flex-wrap items-center gap-3">
+                      {currentCategory.imageUrl ? (
+                        <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100">
+                          <img
+                            src={currentCategory.imageUrl}
+                            alt={currentCategory.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 text-zinc-400">
+                          <Layers className="h-4 w-4" />
+                        </div>
+                      )}
+
+                      <div className="flex-1 min-w-[200px]">
+                        <input
+                          className={inputClass}
+                          placeholder="Link da foto ou envie pelo botão"
+                          value={currentCategory.imageUrl || ""}
+                          onChange={(e) => {
+                            const newCats = siteData.categories.map((c) =>
+                              c.id === currentCategory.id ? { ...c, imageUrl: e.target.value } : c,
+                            );
+                            setSiteData({ ...siteData, categories: newCats });
+                          }}
+                        />
+                      </div>
+
+                      <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-zinc-900 hover:text-zinc-950 transition">
+                        <Upload className="h-3.5 w-3.5" /> Enviar capa
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              handleUploadImage(file, (url) => {
+                                const newCats = siteData.categories.map((c) =>
+                                  c.id === currentCategory.id ? { ...c, imageUrl: url } : c,
+                                );
+                                setSiteData({ ...siteData, categories: newCats });
+                              });
+                            }
+                          }}
+                        />
+                      </label>
+
+                      {currentCategory.imageUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newCats = siteData.categories.map((c) =>
+                              c.id === currentCategory.id ? { ...c, imageUrl: "" } : c,
+                            );
+                            setSiteData({ ...siteData, categories: newCats });
+                          }}
+                          className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-zinc-900 hover:text-zinc-950 transition cursor-pointer"
+                        >
+                          <X className="h-3.5 w-3.5" /> Remover
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            ))}
+            )}
           </div>
+
+          {/* Produtos pertencentes à categoria selecionada */}
+          {currentCategory && (
+            <div className="space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-zinc-950">
+                    Produtos em "{currentCategory.name}" ({productsInCurrentCat.length})
+                  </h3>
+                  <p className="text-xs text-zinc-500">
+                    Cada produto cadastrado aqui ganha o botão "Consultar pelo WhatsApp" com
+                    mensagem automática contendo o nome do item.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newId = `prod-${Date.now()}`;
+                    const newProd: CatalogProduct = {
+                      id: newId,
+                      categoryId: currentCategory.id,
+                      name: "Novo Produto",
+                      desc: "Descrição clara sobre o modelo ou acessório.",
+                      price: "Sob consulta",
+                      imageUrl: "",
+                      active: true,
+                      order: productsInCurrentCat.length + 1,
+                    };
+                    setSiteData({
+                      ...siteData,
+                      catalogProducts: [...(siteData.catalogProducts || []), newProd],
+                    });
+                  }}
+                  className={btnSecondary}
+                >
+                  <Plus className="h-4 w-4" /> Adicionar Produto nesta Categoria
+                </button>
+              </div>
+
+              {productsInCurrentCat.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-xs text-zinc-500">
+                  Nenhum produto cadastrado nesta categoria. Clique no botão acima para adicionar.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {productsInCurrentCat.map((product, pIndex) => (
+                    <div
+                      key={product.id}
+                      className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 transition hover:border-zinc-400"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex-1 space-y-3">
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            <div>
+                              <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
+                                Nome do Produto
+                              </label>
+                              <input
+                                className={inputClass}
+                                value={product.name}
+                                onChange={(e) => {
+                                  const updated = siteData.catalogProducts.map((p) =>
+                                    p.id === product.id ? { ...p, name: e.target.value } : p,
+                                  );
+                                  setSiteData({ ...siteData, catalogProducts: updated });
+                                }}
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
+                                Preço Anunciado
+                              </label>
+                              <input
+                                className={inputClass}
+                                value={product.price}
+                                placeholder="Sob consulta"
+                                onChange={(e) => {
+                                  const updated = siteData.catalogProducts.map((p) =>
+                                    p.id === product.id ? { ...p, price: e.target.value } : p,
+                                  );
+                                  setSiteData({ ...siteData, catalogProducts: updated });
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
+                              Descrição Curta
+                            </label>
+                            <input
+                              className={inputClass}
+                              value={product.desc}
+                              onChange={(e) => {
+                                const updated = siteData.catalogProducts.map((p) =>
+                                  p.id === product.id ? { ...p, desc: e.target.value } : p,
+                                );
+                                setSiteData({ ...siteData, catalogProducts: updated });
+                              }}
+                            />
+                          </div>
+
+                          {/* Foto individual do produto: preview, URL, upload e remoção */}
+                          <div className="rounded-xl border border-zinc-200 bg-white p-3 space-y-2">
+                            <label className="block text-[11px] font-semibold text-zinc-700">
+                              Foto do Produto
+                            </label>
+
+                            <div className="flex flex-wrap items-center gap-3">
+                              {product.imageUrl ? (
+                                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
+                                  <img
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-400">
+                                  <Smartphone className="h-5 w-5" />
+                                </div>
+                              )}
+
+                              <div className="flex-1 min-w-[200px]">
+                                <input
+                                  className={inputClass}
+                                  value={product.imageUrl || ""}
+                                  placeholder="Link da imagem ou envie pelo botão"
+                                  onChange={(e) => {
+                                    const updated = siteData.catalogProducts.map((p) =>
+                                      p.id === product.id ? { ...p, imageUrl: e.target.value } : p,
+                                    );
+                                    setSiteData({ ...siteData, catalogProducts: updated });
+                                  }}
+                                />
+                              </div>
+
+                              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-zinc-900 hover:text-zinc-950 transition">
+                                <Upload className="h-3.5 w-3.5" /> Enviar foto
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      handleUploadImage(file, (url) => {
+                                        const updated = siteData.catalogProducts.map((p) =>
+                                          p.id === product.id ? { ...p, imageUrl: url } : p,
+                                        );
+                                        setSiteData({ ...siteData, catalogProducts: updated });
+                                      });
+                                    }
+                                  }}
+                                />
+                              </label>
+
+                              {product.imageUrl && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updated = siteData.catalogProducts.map((p) =>
+                                      p.id === product.id ? { ...p, imageUrl: "" } : p,
+                                    );
+                                    setSiteData({ ...siteData, catalogProducts: updated });
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-zinc-900 hover:text-zinc-950 transition cursor-pointer"
+                                >
+                                  <X className="h-3.5 w-3.5" /> Remover
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Toggles & Ordem */}
+                          <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+                            <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-zinc-700">
+                              <input
+                                type="checkbox"
+                                checked={product.active}
+                                onChange={(e) => {
+                                  const updated = siteData.catalogProducts.map((p) =>
+                                    p.id === product.id ? { ...p, active: e.target.checked } : p,
+                                  );
+                                  setSiteData({ ...siteData, catalogProducts: updated });
+                                }}
+                                className="rounded border-zinc-300 accent-zinc-900 h-3.5 w-3.5 cursor-pointer"
+                              />
+                              Exibir no site
+                            </label>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-zinc-500 font-medium">Ordem:</span>
+                              <button
+                                type="button"
+                                disabled={pIndex === 0}
+                                onClick={() => {
+                                  if (pIndex > 0) {
+                                    const catProds = [...productsInCurrentCat];
+                                    const temp = catProds[pIndex];
+                                    catProds[pIndex] = catProds[pIndex - 1];
+                                    catProds[pIndex - 1] = temp;
+                                    // Update order numbers
+                                    const reordered = catProds.map((p, idx) => ({
+                                      ...p,
+                                      order: idx + 1,
+                                    }));
+                                    const otherProds = siteData.catalogProducts.filter(
+                                      (p) => p.categoryId !== currentCategory.id,
+                                    );
+                                    setSiteData({
+                                      ...siteData,
+                                      catalogProducts: [...otherProds, ...reordered],
+                                    });
+                                  }
+                                }}
+                                className="rounded-lg border border-zinc-200 bg-white p-1 text-zinc-600 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
+                                title="Mover para cima"
+                              >
+                                <ArrowUp className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={pIndex === productsInCurrentCat.length - 1}
+                                onClick={() => {
+                                  if (pIndex < productsInCurrentCat.length - 1) {
+                                    const catProds = [...productsInCurrentCat];
+                                    const temp = catProds[pIndex];
+                                    catProds[pIndex] = catProds[pIndex + 1];
+                                    catProds[pIndex + 1] = temp;
+                                    const reordered = catProds.map((p, idx) => ({
+                                      ...p,
+                                      order: idx + 1,
+                                    }));
+                                    const otherProds = siteData.catalogProducts.filter(
+                                      (p) => p.categoryId !== currentCategory.id,
+                                    );
+                                    setSiteData({
+                                      ...siteData,
+                                      catalogProducts: [...otherProds, ...reordered],
+                                    });
+                                  }
+                                }}
+                                className="rounded-lg border border-zinc-200 bg-white p-1 text-zinc-600 hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"
+                                title="Mover para baixo"
+                              >
+                                <ArrowDown className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`Excluir item "${product.name}"?`)) {
+                              setSiteData({
+                                ...siteData,
+                                catalogProducts: siteData.catalogProducts.filter(
+                                  (p) => p.id !== product.id,
+                                ),
+                              });
+                            }
+                          }}
+                          className="self-end sm:self-start rounded-lg p-2 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-900 transition cursor-pointer"
+                          title="Excluir produto"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -1196,7 +1452,7 @@ function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
-                <Home className="h-5 w-5 text-red-600" /> Atendimento em Domicílio
+                <Home className="h-5 w-5 text-zinc-900" /> Atendimento em Domicílio
               </h2>
               <p className="text-xs text-zinc-500 mt-0.5">
                 Configure textos, regiões atendidas e a foto da seção "Torres Cell vai até você".
@@ -1213,7 +1469,7 @@ function Dashboard() {
                     homeService: { ...siteData.homeService, active: e.target.checked },
                   })
                 }
-                className="rounded border-zinc-300 accent-red-600 h-4 w-4 cursor-pointer"
+                className="rounded border-zinc-300 accent-zinc-900 h-4 w-4 cursor-pointer"
               />
               Seção Ativa
             </label>
@@ -1323,7 +1579,7 @@ function Dashboard() {
                   />
                 </div>
 
-                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-red-500 hover:text-red-600 transition">
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-zinc-900 hover:text-zinc-950 transition">
                   <Upload className="h-3.5 w-3.5" /> Enviar foto
                   <input
                     type="file"
@@ -1352,7 +1608,7 @@ function Dashboard() {
                         homeService: { ...siteData.homeService, imageUrl: "" },
                       })
                     }
-                    className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 transition"
+                    className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-zinc-900 hover:text-zinc-950 transition cursor-pointer"
                   >
                     <X className="h-3.5 w-3.5" /> Remover
                   </button>

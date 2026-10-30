@@ -1,27 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSiteData } from "@/lib/site-data";
+import { useSiteData, DEFAULT_SITE_DATA } from "@/lib/site-data";
 import { useEffect, useState, useMemo, type ReactNode } from "react";
 import {
   MessageCircle,
   Instagram,
   Star,
   MapPin,
-  Wrench,
-  Smartphone,
   Clock,
-  Monitor,
+  Smartphone,
   BatteryCharging,
-  PlugZap,
-  Cpu,
-  Search,
+  Layers,
+  Zap,
+  SearchCheck,
   Mic,
-  Code2,
+  Settings,
   Shield,
   Cable,
   Headphones,
   Package,
   ArrowRight,
-  Navigation,
+  ArrowLeft,
+  ChevronRight,
   UserRound,
   QrCode,
   Wifi,
@@ -33,7 +32,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { SITE, waLink } from "@/lib/site-config";
-import symbolLogo from "@/assets/logo-symbol.png";
 import repairImg from "@/assets/repair.jpg";
 import storeImg from "@/assets/store.jpg";
 import deliveryImg from "@/assets/delivery.jpg";
@@ -41,7 +39,7 @@ import instagramProfileImg from "@/assets/instagram-profile.jpeg";
 
 const TITLE = "Torres Cell | Assistência Técnica e Celulares em Fortaleza";
 const DESC =
-  "Torres Cell - Qualidade e honestidade. Seu celular em boas mãos. Tecnologia, cuidado e confiança em um só lugar. Assistência técnica especializada e venda de celulares e acessórios.";
+  "Torres Cell - Qualidade e honestidade. Seu celular em boas mãos. Tecnologia, cuidado e confiança em um só lugar.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -80,24 +78,24 @@ function useReveal() {
 function CTA({
   href,
   children,
-  variant = "red",
+  variant = "black",
   className = "",
   onClick,
 }: {
   href?: string;
   children: ReactNode;
-  variant?: "red" | "ghost" | "accent";
+  variant?: "black" | "ghost" | "secondary";
   className?: string;
   onClick?: () => void;
 }) {
   const base =
-    "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer";
+    "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 cursor-pointer";
   const v =
-    variant === "red"
-      ? "bg-gradient-red text-white shadow-red hover:brightness-110 hover:-translate-y-0.5"
-      : variant === "accent"
-        ? "border border-red-200 bg-red-50 text-red-700 hover:border-red-400 hover:bg-red-100"
-        : "border border-zinc-200 bg-zinc-50 text-zinc-800 hover:border-red-400 hover:bg-red-50 hover:text-red-700";
+    variant === "black"
+      ? "bg-zinc-900 text-white shadow-sm hover:bg-black hover:-translate-y-0.5"
+      : variant === "secondary"
+        ? "border border-zinc-200 bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+        : "border border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 hover:text-zinc-950";
 
   if (!href && onClick) {
     return (
@@ -117,73 +115,51 @@ function CTA({
 function SectionHead({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="reveal mx-auto mb-8 max-w-2xl text-center">
-      <span className="mx-auto mb-3 block h-1 w-12 rounded-full bg-gradient-red" />
+      <span className="mx-auto mb-3 block h-1 w-12 rounded-full bg-zinc-900" />
       <h2 className="text-2xl font-bold sm:text-3xl text-zinc-950">{title}</h2>
       {sub && <p className="mt-3 text-zinc-600 text-sm sm:text-base">{sub}</p>}
     </div>
   );
 }
 
-function Particles() {
-  const [dots, setDots] = useState<{ l: number; d: number; delay: number; s: number }[]>([]);
-  useEffect(() => {
-    setDots(
-      Array.from({ length: 12 }, () => ({
-        l: Math.random() * 100,
-        d: 16 + Math.random() * 16,
-        delay: Math.random() * -30,
-        s: 2 + Math.random() * 2.5,
-      })),
-    );
-  }, []);
-  return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
-      {dots.map((p, i) => (
-        <span
-          key={i}
-          className="animate-drift absolute bottom-[-10px] rounded-full bg-red-500/25"
-          style={{
-            left: `${p.l}%`,
-            width: p.s,
-            height: p.s,
-            animationDuration: `${p.d}s`,
-            animationDelay: `${p.delay}s`,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
-// Icon helper mapping for services
+// Icon helper mapping for standardized services icons
 function getServiceIcon(id: string) {
   switch (id) {
     case "troca-tela":
-      return Monitor;
+      return Smartphone;
     case "troca-bateria":
       return BatteryCharging;
     case "troca-vidro":
-      return Shield;
+      return Layers;
     case "problemas-carregamento":
-      return PlugZap;
+      return Zap;
     case "diagnostico-tecnico":
-      return Search;
+      return SearchCheck;
     case "audio-microfone":
       return Mic;
     case "software":
-      return Code2;
+      return Settings;
     default:
-      return Wrench;
+      return Smartphone;
   }
 }
 
-// Product icon helper
-function getProductIcon(category: string, id: string) {
-  if (category === "celulares" || id === "smartphones") return Smartphone;
-  if (id === "capas-peliculas") return Shield;
-  if (id === "fones-ouvido") return Headphones;
-  if (id === "carregadores-cabos") return Cable;
-  return Package;
+// Fallback covers for categories
+function getCategoryFallbackCover(id: string, idx: number) {
+  if (id.includes("smart") || idx === 0) return storeImg;
+  if (id.includes("capa") || id.includes("pelicula") || idx === 1) return repairImg;
+  if (id.includes("fone") || idx === 2) return storeImg;
+  if (id.includes("carregador") || id.includes("cabo") || idx === 3) return repairImg;
+  return deliveryImg;
+}
+
+// Fallback covers for products based on category
+function getProductFallbackCover(categoryId: string) {
+  if (categoryId.includes("smart")) return storeImg;
+  if (categoryId.includes("capa") || categoryId.includes("pelicula")) return repairImg;
+  if (categoryId.includes("fone")) return storeImg;
+  if (categoryId.includes("carregador") || categoryId.includes("cabo")) return repairImg;
+  return storeImg;
 }
 
 function Index() {
@@ -192,6 +168,7 @@ function Index() {
 
   const [pixModalOpen, setPixModalOpen] = useState(false);
   const [wifiModalOpen, setWifiModalOpen] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
   const [copiedKey, setCopiedKey] = useState(false);
   const [copiedWifi, setCopiedWifi] = useState(false);
@@ -320,53 +297,81 @@ function Index() {
   ];
 
   const activeServices = (data.services || []).filter((s) => s.active !== false);
-  const activeProducts = (data.products || []).filter((p) => p.active !== false);
+
+  const categories = useMemo(() => {
+    return data.categories && data.categories.length > 0
+      ? data.categories
+      : DEFAULT_SITE_DATA.categories;
+  }, [data.categories]);
+
+  const catalogProducts = useMemo(() => {
+    return data.catalogProducts && data.catalogProducts.length > 0
+      ? data.catalogProducts
+      : DEFAULT_SITE_DATA.catalogProducts;
+  }, [data.catalogProducts]);
+
+  const selectedCategory = useMemo(() => {
+    if (!selectedCategoryId) return null;
+    return categories.find((c) => c.id === selectedCategoryId) || null;
+  }, [categories, selectedCategoryId]);
+
+  const selectedCategoryProducts = useMemo(() => {
+    if (!selectedCategory) return [];
+    return catalogProducts.filter(
+      (p) => p.categoryId === selectedCategory.id && p.active !== false,
+    );
+  }, [catalogProducts, selectedCategory]);
+
+  const handleSelectCategory = (catId: string) => {
+    setSelectedCategoryId(catId);
+    setTimeout(() => {
+      const el = document.getElementById("produtos");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+  };
+
+  const handleBackToCategories = () => {
+    setSelectedCategoryId(null);
+    setTimeout(() => {
+      const el = document.getElementById("produtos");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 50);
+  };
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-white text-zinc-900">
-      <Particles />
-
       {/* Admin shortcut icon */}
       <Link
         to="/admin"
         aria-label="Painel administrativo"
-        className="absolute right-4 top-4 z-40 grid h-10 w-10 place-items-center rounded-full border border-zinc-200 bg-white/90 text-zinc-500 shadow-sm backdrop-blur-md transition-all hover:scale-105 hover:border-red-500 hover:text-red-600"
+        className="absolute right-4 top-4 z-40 grid h-10 w-10 place-items-center rounded-full border border-zinc-200 bg-white/95 text-zinc-500 shadow-sm backdrop-blur-md transition-all hover:scale-105 hover:border-zinc-900 hover:text-zinc-950"
       >
         <UserRound className="h-4 w-4" />
       </Link>
 
       <main className="relative mx-auto max-w-5xl px-4 pb-24">
-        {/* Header: Símbolo oficial isolado + Hierarquia visual estrita */}
-        <header className="reveal flex flex-col items-center pt-8 text-center sm:pt-12">
-          {/* 1. Logo dentro de elemento circular grafite com borda discreta e sombra suave */}
-          <div className="relative flex items-center justify-center">
-            <div className="flex h-32 w-32 sm:h-36 sm:w-36 items-center justify-center rounded-full bg-zinc-900 border border-zinc-700/60 shadow-lg p-5">
-              <img
-                src={data.company.symbolUrl || symbolLogo}
-                alt="Símbolo oficial Torres Cell"
-                width={200}
-                height={200}
-                className="max-h-24 sm:max-h-28 w-auto object-contain"
-              />
-            </div>
-          </div>
-
-          {/* 2. Nome da empresa */}
-          <h1 className="mt-5 font-display text-4xl sm:text-5xl font-extrabold tracking-tight text-zinc-950">
-            Torres Cell
+        {/* Header: Apenas nome escrito diretamente + hierarquia minimalista preto e branco */}
+        <header className="reveal flex flex-col items-center pt-10 text-center sm:pt-16">
+          {/* Nome da empresa grande, com destaque e boa tipografia */}
+          <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight text-zinc-950 uppercase">
+            TORRES CELL
           </h1>
 
-          {/* 3. Slogan da marca oficial */}
-          <p className="mt-1.5 text-sm sm:text-base font-semibold uppercase tracking-wider text-zinc-600">
+          {/* Slogan institucional menor e discreto */}
+          <p className="mt-2 text-xs sm:text-sm font-semibold uppercase tracking-widest text-zinc-500">
             {data.company.brandSlogan || "Qualidade e honestidade"}
           </p>
 
-          {/* 4. Frase de destaque */}
-          <p className="mt-4 max-w-xl text-lg sm:text-xl font-medium text-zinc-900 leading-relaxed">
+          {/* Frase de destaque da empresa */}
+          <p className="mt-5 max-w-xl text-base sm:text-lg font-medium text-zinc-800 leading-relaxed">
             {data.company.slogan || SITE.slogan}
           </p>
 
-          {/* CTA principal */}
+          {/* CTA principal preto com texto branco */}
           <CTA
             href={wa("Olá, Torres Cell! Gostaria de falar com vocês.")}
             className="mt-6 w-full max-w-sm text-base sm:text-lg"
@@ -383,17 +388,17 @@ function Index() {
           {shortcuts.map(({ label, icon: Icon, href, isAction, onClick }) => {
             const content = (
               <>
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-red-50 text-red-600 transition-colors group-hover:bg-red-600 group-hover:text-white">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-zinc-100 text-zinc-900 transition-colors group-hover:bg-zinc-900 group-hover:text-white">
                   <Icon className="h-5 w-5" />
                 </span>
-                <span className="leading-tight text-zinc-800 group-hover:text-zinc-950">
+                <span className="leading-tight text-zinc-800 group-hover:text-zinc-950 font-medium">
                   {label}
                 </span>
               </>
             );
 
             const cardClasses =
-              "group flex min-h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white p-4 text-center text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-red-400 hover:shadow-md active:scale-95 cursor-pointer";
+              "group flex min-h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white p-4 text-center text-sm font-semibold shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-zinc-400 hover:shadow-md active:scale-95 cursor-pointer";
 
             if (isAction && onClick) {
               return (
@@ -413,14 +418,14 @@ function Index() {
 
         {/* Promoção de Destaque Confirmada */}
         {data.promotion?.active !== false && (
-          <section className="reveal mt-12 overflow-hidden rounded-3xl border border-red-200 bg-gradient-to-r from-red-50/70 via-white to-red-50/70 p-6 shadow-sm sm:p-8">
+          <section className="reveal mt-12 overflow-hidden rounded-3xl border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm sm:p-8">
             <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
               <div className="flex items-center gap-4">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-red text-white shadow-red">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-zinc-900 text-white shadow-sm">
                   <Sparkles className="h-6 w-6" />
                 </span>
                 <div>
-                  <span className="inline-block rounded-full bg-red-100 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-red-700">
+                  <span className="inline-block rounded-full bg-zinc-200 px-3 py-0.5 text-xs font-bold uppercase tracking-wider text-zinc-900">
                     Promoção confirmada
                   </span>
                   <h3 className="mt-1 text-xl font-bold sm:text-2xl text-zinc-950">
@@ -461,7 +466,7 @@ function Index() {
                       ? "text-emerald-500"
                       : status.isLunch
                         ? "text-amber-500"
-                        : "text-red-500"
+                        : "text-zinc-400"
                   }`}
                 >
                   <span
@@ -470,7 +475,7 @@ function Index() {
                         ? "bg-emerald-400"
                         : status.isLunch
                           ? "bg-amber-400"
-                          : "bg-red-400"
+                          : "bg-zinc-400"
                     }`}
                   />
                   <span
@@ -479,7 +484,7 @@ function Index() {
                         ? "bg-emerald-500"
                         : status.isLunch
                           ? "bg-amber-500"
-                          : "bg-red-500"
+                          : "bg-zinc-400"
                     }`}
                   />
                 </span>
@@ -523,15 +528,15 @@ function Index() {
                     key={h.label}
                     className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm transition-colors ${
                       active
-                        ? "border border-red-300 bg-red-50/80 font-semibold text-zinc-950 shadow-sm"
+                        ? "border border-zinc-900 bg-zinc-100 font-semibold text-zinc-950 shadow-sm"
                         : "border border-zinc-100 bg-zinc-50 text-zinc-800"
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-red-600" />
+                      <Clock className="h-4 w-4 text-zinc-900" />
                       {h.label}
                       {active && (
-                        <span className="ml-1 rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white">
+                        <span className="ml-1 rounded-full bg-zinc-900 px-2 py-0.5 text-[11px] font-bold text-white">
                           Hoje
                         </span>
                       )}
@@ -554,7 +559,7 @@ function Index() {
             <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-center sm:text-left">
               <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
                 <div className="flex items-center gap-3">
-                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-red-100 text-red-600">
+                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-zinc-200 text-zinc-900">
                     <Clock className="h-4 w-4" />
                   </span>
                   <div>
@@ -567,7 +572,7 @@ function Index() {
                     </p>
                   </div>
                 </div>
-                <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+                <span className="rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-800">
                   12h – 14h
                 </span>
               </div>
@@ -575,160 +580,261 @@ function Index() {
           </div>
         </section>
 
-        {/* Seção de Assistência Técnica */}
+        {/* Seção de Assistência Técnica Especializada (Serviços com Ícones Padronizados) */}
         <section id="servicos" className="mt-20 scroll-mt-6">
           <SectionHead
             title="Assistência técnica especializada"
-            sub="Preços sob consulta com peças de procedência, transparência e agilidade no atendimento."
+            sub="Peças de procedência, transparência técnica e rapidez no atendimento."
           />
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {activeServices.map((service, i) => {
+            {activeServices.map((service) => {
               const Icon = getServiceIcon(service.id);
               const isPromo = service.highlight || service.id === "troca-tela";
               return (
                 <article
                   key={service.id}
-                  className={`reveal group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${
-                    isPromo ? "border-red-300" : "border-zinc-200 hover:border-red-400"
-                  }`}
+                  className="reveal group flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-zinc-400 hover:shadow-md"
                 >
-                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-100">
-                    <img
-                      src={service.imageUrl || repairImg}
-                      alt={`Serviço: ${service.name}`}
-                      loading="lazy"
-                      width={640}
-                      height={800}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-75" />
-                    <span className="absolute bottom-3 left-3 grid h-10 w-10 place-items-center rounded-xl bg-gradient-red text-white shadow-red">
-                      <Icon className="h-5 w-5" />
-                    </span>
-
-                    {isPromo && (
-                      <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-gradient-red px-3 py-1 text-[11px] font-bold text-white shadow-red">
-                        <Sparkles className="h-3 w-3" /> Película 3D grátis
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-1 flex-col justify-between p-5 pt-2">
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-bold text-zinc-950">{service.name}</h3>
-                        <span className="shrink-0 rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-700">
-                          {service.price || "Sob consulta"}
-                        </span>
+                  <div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-zinc-100 text-zinc-900 transition-colors group-hover:bg-zinc-900 group-hover:text-white">
+                        <Icon className="h-7 w-7" strokeWidth={1.8} />
                       </div>
-                      <p className="mt-2 text-sm text-zinc-600">{service.desc}</p>
+                      <span className="rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-semibold text-zinc-800">
+                        {service.price || "Sob consulta"}
+                      </span>
                     </div>
 
-                    <CTA
-                      variant="ghost"
-                      href={wa(
-                        `Olá, Torres Cell! Gostaria de solicitar um orçamento para ${service.name.toLowerCase()}.`,
-                      )}
-                      className="mt-5 w-full text-sm"
-                    >
-                      Solicitar orçamento <ArrowRight className="h-4 w-4" />
-                    </CTA>
+                    <div className="mt-4">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-zinc-950">{service.name}</h3>
+                        {isPromo && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+                            Película 3D grátis
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 text-sm text-zinc-600 leading-relaxed">{service.desc}</p>
+                    </div>
                   </div>
+
+                  <CTA
+                    variant="black"
+                    href={wa(
+                      `Olá, Torres Cell! Gostaria de solicitar um orçamento para ${service.name.toLowerCase()}.`,
+                    )}
+                    className="mt-6 w-full text-sm"
+                  >
+                    Solicitar orçamento <ArrowRight className="h-4 w-4" />
+                  </CTA>
                 </article>
               );
             })}
           </div>
         </section>
 
-        {/* Seção de Celulares e Acessórios */}
+        {/* Seção de Celulares e Acessórios (Mini Catálogo Interativo por Categorias) */}
         <section id="produtos" className="mt-20 scroll-mt-6">
           <SectionHead
             title="Celulares e acessórios"
-            sub="Consulte a disponibilidade de smartphones e itens para o seu dia a dia diretamente com a Torres Cell."
+            sub="Explore nosso catálogo por categoria com produtos selecionados e procedência garantida."
           />
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {activeProducts.map((product) => {
-              const Icon = getProductIcon(product.category, product.id);
-              return (
-                <article
-                  key={product.id}
-                  className="reveal group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-red-400 hover:shadow-md"
-                >
-                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-100">
-                    <img
-                      src={product.imageUrl || storeImg}
-                      alt={`Foto de ${product.name}`}
-                      loading="lazy"
-                      width={640}
-                      height={800}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
-                    <span className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-xl bg-white/95 text-red-600 shadow-sm backdrop-blur-md">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-2.5 py-0.5 text-xs font-semibold text-zinc-800 shadow-sm backdrop-blur-md">
-                      {product.category === "celulares" ? "Smartphone" : "Acessório"}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-1 flex-col justify-between p-5">
-                    <div>
-                      <h3 className="text-lg font-bold text-zinc-950">{product.name}</h3>
-                      <p className="mt-2 text-sm text-zinc-600">{product.desc}</p>
+          {!selectedCategory ? (
+            /* Visualização das Categorias Principais */
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {categories.map((cat, idx) => {
+                const productCount = catalogProducts.filter(
+                  (p) => p.categoryId === cat.id && p.active !== false,
+                ).length;
+                const cover = cat.imageUrl || getCategoryFallbackCover(cat.id, idx);
+                return (
+                  <div
+                    key={cat.id}
+                    onClick={() => handleSelectCategory(cat.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleSelectCategory(cat.id);
+                      }
+                    }}
+                    className="group cursor-pointer overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-zinc-400 hover:shadow-md active:scale-[0.99]"
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-zinc-100">
+                      <img
+                        src={cover}
+                        alt={`Categoria ${cat.name}`}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-zinc-900 shadow-sm backdrop-blur-md">
+                        {productCount} {productCount === 1 ? "produto" : "produtos"}
+                      </span>
                     </div>
 
-                    <CTA
-                      variant="ghost"
-                      href={wa(
-                        `Olá, Torres Cell! Gostaria de consultar a disponibilidade de ${product.name.toLowerCase()}.`,
-                      )}
-                      className="mt-5 w-full text-sm"
-                    >
-                      Consultar disponibilidade
-                    </CTA>
+                    <div className="flex items-center justify-between p-5">
+                      <div className="pr-2">
+                        <h3 className="text-lg font-bold text-zinc-950 group-hover:text-zinc-900">
+                          {cat.name}
+                        </h3>
+                        {cat.description && (
+                          <p className="mt-1 line-clamp-2 text-xs text-zinc-500">
+                            {cat.description}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectCategory(cat.id);
+                        }}
+                        className="inline-flex h-9 items-center gap-1 rounded-xl bg-zinc-900 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-black shrink-0 cursor-pointer"
+                      >
+                        Ver produtos <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Galeria de Fotos / Novidades na loja (se houver) */}
-        {data.photos && data.photos.length > 0 && (
-          <section id="novidades" className="mt-20 scroll-mt-6">
-            <SectionHead
-              title="Fotos da loja"
-              sub="Acompanhe novidades, peças e aparelhos disponíveis na Torres Cell."
-            />
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {data.photos.map((p) => (
-                <a
-                  key={p.id}
-                  href={wa(
-                    `Olá, Torres Cell! Vi no site a foto: ${p.title || "uma novidade"}. Gostaria de mais informações.`,
-                  )}
-                  {...ext}
-                  className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-red-400 hover:shadow-md"
-                >
-                  <div className="aspect-square w-full overflow-hidden bg-zinc-100">
-                    <img
-                      src={p.url}
-                      alt={p.title || "Foto Torres Cell"}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                  {p.title && (
-                    <p className="truncate p-3 text-sm font-semibold text-zinc-800">{p.title}</p>
-                  )}
-                </a>
-              ))}
+                );
+              })}
             </div>
-          </section>
-        )}
+          ) : (
+            /* Visualização dos Produtos da Categoria Selecionada */
+            <div className="space-y-6">
+              {/* Barra de Navegação de Retorno e Identificação */}
+              <div className="flex flex-col gap-4 rounded-3xl border border-zinc-200 bg-zinc-50 p-5 sm:p-6 shadow-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    type="button"
+                    onClick={handleBackToCategories}
+                    className="inline-flex items-center gap-2 self-start rounded-xl border border-zinc-300 bg-white px-4 py-2 text-xs sm:text-sm font-semibold text-zinc-900 shadow-sm transition-all hover:bg-zinc-100 hover:border-zinc-400 active:scale-95 cursor-pointer"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Voltar para todas as categorias
+                  </button>
+
+                  <span className="rounded-full bg-zinc-200 px-3 py-1 text-xs font-semibold text-zinc-800 self-start sm:self-auto">
+                    {selectedCategoryProducts.length}{" "}
+                    {selectedCategoryProducts.length === 1
+                      ? "item cadastrado"
+                      : "itens cadastrados"}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-black text-zinc-950 tracking-tight sm:text-3xl">
+                    {selectedCategory.name}
+                  </h3>
+                  {selectedCategory.description && (
+                    <p className="mt-1 text-sm text-zinc-600 max-w-2xl">
+                      {selectedCategory.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Filtro rápido entre outras categorias */}
+                <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-zinc-200 scrollbar-none">
+                  <span className="text-xs font-semibold text-zinc-500 shrink-0">Categorias:</span>
+                  <button
+                    type="button"
+                    onClick={handleBackToCategories}
+                    className="shrink-0 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-600 hover:border-zinc-400 hover:text-zinc-950 transition cursor-pointer"
+                  >
+                    Todas
+                  </button>
+                  {categories.map((c) => {
+                    const isCurrent = c.id === selectedCategoryId;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => handleSelectCategory(c.id)}
+                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer ${
+                          isCurrent
+                            ? "bg-zinc-950 text-white shadow-sm"
+                            : "border border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-100"
+                        }`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Grid de Produtos ou Estado Vazio */}
+              {selectedCategoryProducts.length === 0 ? (
+                <div className="rounded-3xl border border-dashed border-zinc-300 bg-zinc-50/50 p-12 text-center text-zinc-600">
+                  <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-zinc-200 text-zinc-800">
+                    <Package className="h-6 w-6" />
+                  </div>
+                  <h4 className="text-base font-bold text-zinc-900">
+                    Nenhum produto cadastrado nesta categoria no momento.
+                  </h4>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Estamos constantemente atualizando nosso estoque com novos itens e modelos.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleBackToCategories}
+                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-black transition cursor-pointer"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Ver outras categorias
+                  </button>
+                </div>
+              ) : (
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {selectedCategoryProducts.map((product) => {
+                    const prodImage =
+                      product.imageUrl || getProductFallbackCover(product.categoryId);
+                    return (
+                      <article
+                        key={product.id}
+                        className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-zinc-400 hover:shadow-md"
+                      >
+                        <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100">
+                          <img
+                            src={prodImage}
+                            alt={product.name}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
+
+                        <div className="flex flex-1 flex-col justify-between p-5">
+                          <div>
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className="font-bold text-zinc-950 text-base">{product.name}</h4>
+                              <span className="shrink-0 rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-800">
+                                {product.price || "Sob consulta"}
+                              </span>
+                            </div>
+                            <p className="mt-2 text-sm text-zinc-600 line-clamp-3">
+                              {product.desc}
+                            </p>
+                          </div>
+
+                          <CTA
+                            variant="black"
+                            href={wa(
+                              `Olá! Tenho interesse no produto ${product.name}. Gostaria de mais informações.`,
+                            )}
+                            className="mt-5 w-full text-sm"
+                          >
+                            <MessageCircle className="h-4 w-4" /> Consultar pelo WhatsApp
+                          </CTA>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </section>
 
         {/* Atendimento em Domicílio ("Torres Cell vai até você") */}
         {data.homeService?.active !== false && (
@@ -749,7 +855,7 @@ function Index() {
 
             <div className="p-6 sm:p-8 flex flex-col justify-between">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-900">
                   <Home className="h-3.5 w-3.5" />{" "}
                   {data.homeService.badge || "Atendimento em domicílio"}
                 </span>
@@ -774,7 +880,7 @@ function Index() {
                           key={b}
                           className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-700"
                         >
-                          <MapPin className="mr-1 inline h-3.5 w-3.5 text-red-600" />
+                          <MapPin className="mr-1 inline h-3.5 w-3.5 text-zinc-900" />
                           {b}
                         </li>
                       ))}
@@ -801,7 +907,7 @@ function Index() {
           className="reveal mt-20 overflow-hidden rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-10"
         >
           <div className="text-center">
-            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-red text-white shadow-red">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-zinc-900 text-white shadow-sm">
               <Instagram className="h-7 w-7" />
             </span>
 
@@ -816,7 +922,7 @@ function Index() {
 
           {/* Único Card Retangular Vertical com a captura real do perfil */}
           <div className="mt-8 flex justify-center">
-            <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:border-red-400 hover:shadow-md">
+            <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:border-zinc-400 hover:shadow-md">
               <a
                 href={data.company.instagram || SITE.instagram}
                 {...ext}
@@ -840,31 +946,21 @@ function Index() {
             <a
               href={data.company.instagram || SITE.instagram}
               {...ext}
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-semibold text-zinc-800 transition-colors hover:border-red-500 hover:bg-red-50 hover:text-red-700"
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-xs font-semibold text-zinc-800 transition-colors hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
             >
-              <Instagram className="h-4 w-4 text-red-600" /> Seguir no Instagram
+              <Instagram className="h-4 w-4" /> Seguir no Instagram
             </a>
           </div>
         </section>
       </main>
 
-      {/* Rodapé Simplificado */}
+      {/* Rodapé Minimalista B&W */}
       <footer className="relative border-t border-zinc-200 bg-zinc-50 px-4 py-12 text-center">
         <div className="mx-auto max-w-md">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-zinc-900 border border-zinc-700 p-3 shadow-md">
-            <img
-              src={data.company.symbolUrl || symbolLogo}
-              alt="Símbolo Torres Cell"
-              loading="lazy"
-              width={60}
-              height={60}
-              className="h-10 w-auto object-contain"
-            />
-          </div>
-          <h2 className="mt-3 font-display text-xl font-bold tracking-tight text-zinc-950">
-            Torres Cell
+          <h2 className="font-display text-2xl font-black tracking-tight text-zinc-950 uppercase">
+            TORRES CELL
           </h2>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+          <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-zinc-500">
             {data.company.brandSlogan || "Qualidade e honestidade"}
           </p>
 
@@ -874,7 +970,7 @@ function Index() {
               <a
                 href={SITE.localway}
                 {...ext}
-                className="font-semibold text-zinc-800 transition-colors hover:text-red-600"
+                className="font-semibold text-zinc-800 transition-colors hover:text-zinc-950"
               >
                 Localway
               </a>
@@ -900,7 +996,7 @@ function Index() {
           <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-zinc-200 bg-white p-6 text-zinc-900 shadow-2xl animate-in fade-in-0 zoom-in-95">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
               <div className="flex items-center gap-2.5">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-red text-white shadow-red">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-zinc-900 text-white shadow-sm">
                   <QrCode className="h-5 w-5" />
                 </span>
                 <div>
@@ -912,7 +1008,7 @@ function Index() {
                 type="button"
                 onClick={() => setPixModalOpen(false)}
                 aria-label="Fechar"
-                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -929,23 +1025,23 @@ function Index() {
                 <p className="font-semibold text-zinc-900">{data.pix.banco}</p>
               </div>
 
-              <div className="rounded-xl border border-red-200 bg-red-50/70 p-3.5">
+              <div className="rounded-xl border border-zinc-300 bg-zinc-100 p-3.5">
                 <p className="text-xs font-medium text-zinc-600">Chave Pix (CNPJ)</p>
-                <p className="mt-1 font-mono text-base font-bold text-red-600 select-all">
+                <p className="mt-1 font-mono text-base font-bold text-zinc-950 select-all">
                   {data.pix.chave}
                 </p>
               </div>
 
               {copiedKey && (
-                <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500/15 py-2 text-xs font-semibold text-emerald-600">
-                  <CheckCircle2 className="h-4 w-4" /> Chave Pix copiada!
+                <div className="flex items-center justify-center gap-2 rounded-xl bg-zinc-900 py-2 text-xs font-semibold text-white">
+                  <CheckCircle2 className="h-4 w-4" /> Chave Pix copiada com sucesso!
                 </div>
               )}
 
               <button
                 type="button"
                 onClick={handleCopyPix}
-                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-red px-5 py-3 font-semibold text-white shadow-red transition-all hover:brightness-110 active:scale-95"
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white shadow-sm transition-all hover:bg-black active:scale-95 cursor-pointer"
               >
                 {copiedKey ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {copiedKey ? "Chave Pix copiada!" : "Copiar chave Pix"}
@@ -972,7 +1068,7 @@ function Index() {
           <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-zinc-200 bg-white p-6 text-zinc-900 shadow-2xl animate-in fade-in-0 zoom-in-95">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
               <div className="flex items-center gap-2.5">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-red text-white shadow-red">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-zinc-900 text-white shadow-sm">
                   <Wifi className="h-5 w-5" />
                 </span>
                 <div>
@@ -984,7 +1080,7 @@ function Index() {
                 type="button"
                 onClick={() => setWifiModalOpen(false)}
                 aria-label="Fechar"
-                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -996,23 +1092,23 @@ function Index() {
                 <p className="font-semibold text-zinc-900">{data.wifi.rede}</p>
               </div>
 
-              <div className="rounded-xl border border-red-200 bg-red-50/70 p-3.5">
+              <div className="rounded-xl border border-zinc-300 bg-zinc-100 p-3.5">
                 <p className="text-xs font-medium text-zinc-600">Senha de Acesso</p>
-                <p className="mt-1 font-mono text-base font-bold text-red-600 select-all">
+                <p className="mt-1 font-mono text-base font-bold text-zinc-950 select-all">
                   {data.wifi.senha}
                 </p>
               </div>
 
               {copiedWifi && (
-                <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500/15 py-2 text-xs font-semibold text-emerald-600">
-                  <CheckCircle2 className="h-4 w-4" /> Senha copiada!
+                <div className="flex items-center justify-center gap-2 rounded-xl bg-zinc-900 py-2 text-xs font-semibold text-white">
+                  <CheckCircle2 className="h-4 w-4" /> Senha copiada com sucesso!
                 </div>
               )}
 
               <button
                 type="button"
                 onClick={handleCopyWifi}
-                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-red px-5 py-3 font-semibold text-white shadow-red transition-all hover:brightness-110 active:scale-95"
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white shadow-sm transition-all hover:bg-black active:scale-95 cursor-pointer"
               >
                 {copiedWifi ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {copiedWifi ? "Senha copiada!" : "Copiar senha"}

@@ -3,6 +3,8 @@ import { getServerSiteData, saveServerSiteData } from "./server-api";
 import { DEFAULT_SITE_DATA } from "./default-site-data";
 import { SITE } from "@/lib/site-config";
 
+export { DEFAULT_SITE_DATA };
+
 export interface CompanyData {
   name: string;
   brandSlogan?: string;
@@ -71,6 +73,25 @@ export interface ProductItem {
   imageUrl?: string;
 }
 
+export interface ProductCategory {
+  id: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  order?: number;
+}
+
+export interface CatalogProduct {
+  id: string;
+  categoryId: string;
+  name: string;
+  desc: string;
+  price: string;
+  imageUrl?: string;
+  active: boolean;
+  order?: number;
+}
+
 export interface Photo {
   id: string;
   title: string;
@@ -93,6 +114,8 @@ export interface SiteData {
   promotion: PromotionData;
   homeService: HomeServiceData;
   services: ServiceItem[];
+  categories: ProductCategory[];
+  catalogProducts: CatalogProduct[];
   products: ProductItem[];
   photos: Photo[];
   instagramPosts?: InstagramPost[];
@@ -127,7 +150,19 @@ export async function fetchSiteData(): Promise<SiteData> {
     try {
       const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (cached) {
-        localData = { ...DEFAULT_SITE_DATA, ...JSON.parse(cached) } as SiteData;
+        const parsed = JSON.parse(cached);
+        localData = {
+          ...DEFAULT_SITE_DATA,
+          ...parsed,
+          categories:
+            Array.isArray(parsed.categories) && parsed.categories.length > 0
+              ? parsed.categories
+              : DEFAULT_SITE_DATA.categories,
+          catalogProducts:
+            Array.isArray(parsed.catalogProducts) && parsed.catalogProducts.length > 0
+              ? parsed.catalogProducts
+              : DEFAULT_SITE_DATA.catalogProducts,
+        } as SiteData;
       }
     } catch {
       // ignore
@@ -139,6 +174,14 @@ export async function fetchSiteData(): Promise<SiteData> {
     const serverData = await getServerSiteData();
     if (serverData && typeof serverData === "object" && "company" in serverData) {
       const sData = { ...DEFAULT_SITE_DATA, ...serverData } as SiteData;
+
+      // Ensure categories and catalogProducts exist
+      if (!sData.categories || sData.categories.length === 0) {
+        sData.categories = DEFAULT_SITE_DATA.categories;
+      }
+      if (!sData.catalogProducts || sData.catalogProducts.length === 0) {
+        sData.catalogProducts = DEFAULT_SITE_DATA.catalogProducts;
+      }
 
       // If server photos are empty but local has photos, preserve local photos
       if (
