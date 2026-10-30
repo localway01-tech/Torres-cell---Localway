@@ -16,9 +16,10 @@ import {
   Wrench,
   Smartphone,
   Home,
-  Shield,
-  Eye,
+  MapPin,
   Lock,
+  X,
+  Instagram,
 } from "lucide-react";
 import {
   useSiteData,
@@ -26,10 +27,10 @@ import {
   type SiteData,
   type ServiceItem,
   type ProductItem,
-  type Photo,
+  type InstagramPost,
 } from "@/lib/site-data";
-import { authenticateAdmin, changeAdminPassword, uploadImageServer } from "@/lib/server-api";
-import logo from "@/assets/logo.png";
+import { authenticateAdmin, uploadImageServer } from "@/lib/server-api";
+import symbolLogo from "@/assets/logo-symbol.png";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -44,11 +45,11 @@ export const Route = createFileRoute("/admin")({
 });
 
 const inputClass =
-  "w-full rounded-xl border border-border bg-secondary/80 px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary";
+  "w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-red-600 focus:ring-1 focus:ring-red-600 placeholder:text-zinc-400";
 const btnPrimary =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-red px-5 py-2.5 font-semibold text-primary-foreground shadow-red transition hover:brightness-110 active:scale-95 disabled:opacity-50 cursor-pointer";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-gradient-red px-5 py-2.5 font-semibold text-white shadow-red transition hover:brightness-110 active:scale-95 disabled:opacity-50 cursor-pointer";
 const btnSecondary =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-secondary px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:bg-accent active:scale-95 cursor-pointer";
+  "inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:border-red-500 hover:text-red-600 active:scale-95 cursor-pointer";
 
 const ADMIN_SESSION_KEY = "torres_cell_admin_auth_v1";
 
@@ -75,27 +76,27 @@ function AdminPage() {
 
   if (loadingSession) {
     return (
-      <div className="circuit-bg flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Carregando painel...</p>
+      <div className="flex min-h-screen items-center justify-center bg-white text-zinc-500">
+        <p>Carregando painel...</p>
       </div>
     );
   }
 
   return (
-    <div className="circuit-bg min-h-screen px-4 py-8 text-foreground">
+    <div className="min-h-screen bg-zinc-50/80 px-4 py-8 text-zinc-900">
       <div className="mx-auto max-w-4xl">
         {/* Top bar */}
         <div className="mb-6 flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition"
+            className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 hover:text-red-600 transition"
           >
             <ArrowLeft className="h-4 w-4" /> Voltar ao site público
           </Link>
           {sessionToken && (
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:border-primary hover:text-primary transition"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:border-red-500 hover:text-red-600 shadow-sm transition"
             >
               <LogOut className="h-3.5 w-3.5" /> Sair
             </button>
@@ -162,27 +163,29 @@ function LoginForm({ onLoginSuccess }: { onLoginSuccess: (token: string) => void
   return (
     <div className="mx-auto mt-12 max-w-md">
       <div className="text-center">
-        <img
-          src={logo}
-          alt="Torres Cell"
-          width={120}
-          height={120}
-          className="mx-auto h-24 w-auto object-contain drop-shadow"
-        />
-        <h1 className="mt-4 text-3xl font-extrabold tracking-tight">
-          Painel <span className="text-primary">Admin</span>
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-zinc-900 border border-zinc-700/60 p-4 shadow-lg">
+          <img
+            src={symbolLogo}
+            alt="Torres Cell"
+            width={120}
+            height={120}
+            className="h-14 w-auto object-contain"
+          />
+        </div>
+        <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-950">
+          Painel <span className="text-red-600">Admin</span>
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-zinc-600">
           Acesso exclusivo para gerenciamento da Torres Cell.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="mt-8 space-y-4 rounded-3xl border border-border bg-card p-7 shadow-card"
+        className="mt-8 space-y-4 rounded-3xl border border-zinc-200 bg-white p-7 shadow-sm"
       >
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
             Usuário de Administrador
           </label>
           <input
@@ -197,7 +200,7 @@ function LoginForm({ onLoginSuccess }: { onLoginSuccess: (token: string) => void
         </div>
 
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1.5">
             Senha
           </label>
           <input
@@ -215,14 +218,14 @@ function LoginForm({ onLoginSuccess }: { onLoginSuccess: (token: string) => void
           <div
             className={`flex items-center gap-2 rounded-xl p-3 text-sm ${
               msg.type === "error"
-                ? "bg-red-500/15 text-red-400 border border-red-500/30"
-                : "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                ? "bg-red-50 text-red-700 border border-red-200"
+                : "bg-emerald-50 text-emerald-700 border border-emerald-200"
             }`}
           >
             {msg.type === "error" ? (
-              <AlertCircle className="h-4 w-4 shrink-0" />
+              <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
             ) : (
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
             )}
             <span>{msg.text}</span>
           </div>
@@ -232,7 +235,7 @@ function LoginForm({ onLoginSuccess }: { onLoginSuccess: (token: string) => void
           <Lock className="h-4 w-4" /> {busy ? "Entrando..." : "Acessar Painel"}
         </button>
 
-        <p className="text-center text-xs text-muted-foreground mt-4">
+        <p className="text-center text-xs text-zinc-500 mt-4">
           Área restrita. Não é permitido cadastro de novos usuários.
         </p>
       </form>
@@ -290,22 +293,14 @@ function compressImageFile(file: File, maxWidth = 1200, quality = 0.82): Promise
   });
 }
 
-// Complete Dashboard with full management tabs
+// 6 Dedicated Admin Sections
 function Dashboard() {
   const { data: initialData, refresh } = useSiteData();
   const [siteData, setSiteData] = useState<SiteData>(initialData);
   const [activeTab, setActiveTab] = useState<
-    | "geral"
-    | "pix-wifi"
-    | "horarios"
-    | "servicos"
-    | "produtos"
-    | "domicilio"
-    | "galeria"
-    | "seguranca"
-  >("geral");
+    "contato" | "pix-wifi" | "horarios" | "servicos" | "produtos" | "domicilio"
+  >("contato");
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(
     null,
   );
@@ -341,15 +336,13 @@ function Dashboard() {
     }
   };
 
-  // Upload helper with client compression and resilient fallback
+  // Upload helper with client compression and server upload
   const handleUploadImage = async (file: File, callback: (url: string) => void) => {
     if (!file) return;
-    setUploading(true);
     try {
       const compressed = await compressImageFile(file, 1200, 0.82);
       if (!compressed) {
         showFeedback("Não foi possível carregar a foto.", "error");
-        setUploading(false);
         return;
       }
 
@@ -362,55 +355,27 @@ function Dashboard() {
         });
         if (uploadRes?.success && uploadRes.url) {
           callback(uploadRes.url);
-          showFeedback("Foto adicionada com sucesso!");
+          showFeedback("Foto enviada com sucesso!");
         } else {
           callback(compressed);
-          showFeedback("Foto adicionada com sucesso!");
+          showFeedback("Foto enviada com sucesso!");
         }
       } catch {
         callback(compressed);
-        showFeedback("Foto adicionada com sucesso!");
+        showFeedback("Foto enviada com sucesso!");
       }
     } catch {
       showFeedback("Erro ao processar imagem.", "error");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Change password state
-  const [currPass, setCurrPass] = useState("");
-  const [newPass, setNewPass] = useState("");
-  const [passMsg, setPassMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
-
-  const handlePasswordChange = async (e: FormEvent) => {
-    e.preventDefault();
-    setPassMsg(null);
-    try {
-      const res = await changeAdminPassword({
-        data: { currentPassword: currPass, newPassword: newPass },
-      });
-      if (res.success) {
-        setPassMsg({ type: "success", text: "Senha atualizada com sucesso!" });
-        setCurrPass("");
-        setNewPass("");
-      } else {
-        setPassMsg({ type: "error", text: res.error || "Falha ao alterar senha." });
-      }
-    } catch {
-      setPassMsg({ type: "error", text: "Erro ao comunicar com o servidor." });
     }
   };
 
   const tabs = [
-    { id: "geral", label: "Empresa & Contato", icon: Shield },
-    { id: "pix-wifi", label: "Pix & Wi-Fi", icon: QrCode },
-    { id: "horarios", label: "Horários", icon: Clock },
+    { id: "contato", label: "Contato e Localização", icon: MapPin },
+    { id: "pix-wifi", label: "Pix e Wi-Fi", icon: QrCode },
+    { id: "horarios", label: "Horários de Funcionamento", icon: Clock },
     { id: "servicos", label: "Serviços", icon: Wrench },
     { id: "produtos", label: "Produtos", icon: Smartphone },
-    { id: "domicilio", label: "Em Domicílio", icon: Home },
-    { id: "galeria", label: "Galeria de Fotos", icon: Upload },
-    { id: "seguranca", label: "Segurança", icon: Lock },
+    { id: "domicilio", label: "Atendimento em Domicílio", icon: Home },
   ] as const;
 
   return (
@@ -418,10 +383,10 @@ function Dashboard() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            Gerenciamento <span className="text-primary">Torres Cell</span>
+          <h1 className="text-3xl font-extrabold tracking-tight text-zinc-950">
+            Gerenciamento <span className="text-red-600">Torres Cell</span>
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-zinc-600">
             Todas as alterações salvas aqui são refletidas imediatamente no site público.
           </p>
         </div>
@@ -439,23 +404,23 @@ function Dashboard() {
       {/* Feedback banner */}
       {feedback && (
         <div
-          className={`flex items-center gap-2 rounded-2xl p-4 text-sm font-semibold ${
+          className={`flex items-center gap-2 rounded-2xl p-4 text-sm font-semibold shadow-sm ${
             feedback.type === "success"
-              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm"
-              : "bg-red-500/15 text-red-400 border border-red-500/30"
+              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+              : "bg-red-50 text-red-800 border border-red-200"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="h-5 w-5 shrink-0" />
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
           ) : (
-            <AlertCircle className="h-5 w-5 shrink-0" />
+            <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
           )}
           <span>{feedback.text}</span>
         </div>
       )}
 
       {/* Tabs navigation */}
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-border bg-card p-2 shadow-card">
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -464,10 +429,10 @@ function Dashboard() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
                 isActive
-                  ? "bg-gradient-red text-primary-foreground shadow-red"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  ? "bg-gradient-red text-white shadow-red"
+                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950"
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -477,121 +442,23 @@ function Dashboard() {
         })}
       </div>
 
-      {/* TAB 1: Informações Gerais */}
-      {activeTab === "geral" && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-5">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" /> Informações da Empresa & Links
-          </h2>
+      {/* SEÇÃO 1: Contato e Localização */}
+      {activeTab === "contato" && (
+        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5">
+          <div>
+            <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-red-600" /> Contato e Localização
+            </h2>
+            <p className="text-xs text-zinc-500 mt-1">
+              Gerencie canais de contato, endereço e rotas para facilitar o acesso dos clientes à
+              Torres Cell.
+            </p>
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Nome Comercial Oficial
-              </label>
-              <input
-                className={inputClass}
-                value={siteData.company.name}
-                onChange={(e) =>
-                  setSiteData({
-                    ...siteData,
-                    company: { ...siteData.company, name: e.target.value },
-                  })
-                }
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Slogan Oficial da Marca
-              </label>
-              <input
-                className={inputClass}
-                placeholder="Qualidade e Honestidade"
-                value={siteData.company.brandSlogan || ""}
-                onChange={(e) =>
-                  setSiteData({
-                    ...siteData,
-                    company: { ...siteData.company, brandSlogan: e.target.value },
-                  })
-                }
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Frase de Destaque
-              </label>
-              <input
-                className={inputClass}
-                value={siteData.company.slogan}
-                onChange={(e) =>
-                  setSiteData({
-                    ...siteData,
-                    company: { ...siteData.company, slogan: e.target.value },
-                  })
-                }
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Descrição do Negócio
-              </label>
-              <input
-                className={inputClass}
-                value={siteData.company.description}
-                onChange={(e) =>
-                  setSiteData({
-                    ...siteData,
-                    company: { ...siteData.company, description: e.target.value },
-                  })
-                }
-              />
-            </div>
-
-            <div className="sm:col-span-2 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-secondary/40 p-4">
-              <div className="flex-1">
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                  Símbolo Oficial da Marca (PNG transparente, apenas o símbolo)
-                </label>
-                <input
-                  className={inputClass}
-                  placeholder="/src/assets/logo-symbol.png ou URL de imagem"
-                  value={siteData.company.symbolUrl || ""}
-                  onChange={(e) =>
-                    setSiteData({
-                      ...siteData,
-                      company: { ...siteData.company, symbolUrl: e.target.value },
-                    })
-                  }
-                />
-              </div>
-
-              <label className="mt-5 inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-secondary px-4 py-2.5 text-xs font-semibold hover:border-primary">
-                <Upload className="h-4 w-4" /> Enviar Símbolo
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      handleUploadImage(file, (url) => {
-                        setSiteData({
-                          ...siteData,
-                          company: { ...siteData.company, symbolUrl: url },
-                        });
-                      });
-                    }
-                  }}
-                />
-              </label>
-            </div>
-
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                WhatsApp (apenas números, com 55 e DDD)
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                WhatsApp Comercial (com DDD)
               </label>
               <input
                 className={inputClass}
@@ -607,11 +474,12 @@ function Dashboard() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Link do Perfil no Instagram
               </label>
               <input
                 className={inputClass}
+                placeholder="https://instagram.com/torres_cell_0"
                 value={siteData.company.instagram}
                 onChange={(e) =>
                   setSiteData({
@@ -623,11 +491,12 @@ function Dashboard() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Link de Avaliações no Google
               </label>
               <input
                 className={inputClass}
+                placeholder="https://g.page/r/.../review"
                 value={siteData.company.googleReview}
                 onChange={(e) =>
                   setSiteData({
@@ -639,11 +508,12 @@ function Dashboard() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Endereço Físico Completo
               </label>
               <input
                 className={inputClass}
+                placeholder="Av. Dr. Theberge, 2404 — Presidente Kennedy, Fortaleza — CE"
                 value={siteData.company.address}
                 onChange={(e) =>
                   setSiteData({
@@ -655,11 +525,12 @@ function Dashboard() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Link da Rota no Google Maps (botão "Como chegar")
               </label>
               <input
                 className={inputClass}
+                placeholder="https://maps.google.com/?q=..."
                 value={siteData.company.mapsRoute}
                 onChange={(e) =>
                   setSiteData({
@@ -673,22 +544,22 @@ function Dashboard() {
         </div>
       )}
 
-      {/* TAB 2: Pix e Wi-Fi */}
+      {/* SEÇÃO 2: Pix e Wi-Fi */}
       {activeTab === "pix-wifi" && (
         <div className="space-y-6">
           {/* Pix Card */}
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <QrCode className="h-5 w-5 text-primary" /> Configuração do Pix
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
+            <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
+              <QrCode className="h-5 w-5 text-red-600" /> Configuração do Pix
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-zinc-500">
               Estes dados são exibidos no modal pop-up de Pix para que o cliente copie a chave com
               um clique.
             </p>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
                   Nome do Titular
                 </label>
                 <input
@@ -704,7 +575,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
                   Instituição / Banco
                 </label>
                 <input
@@ -720,8 +591,8 @@ function Dashboard() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                  Chave Pix (copiada exclusivamente pelo botão do cliente)
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Chave Pix (CNPJ, CPF, E-mail ou Telefone)
                 </label>
                 <input
                   className={`${inputClass} font-mono`}
@@ -738,18 +609,18 @@ function Dashboard() {
           </div>
 
           {/* Wi-Fi Card */}
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Wifi className="h-5 w-5 text-primary" /> Configuração do Wi-Fi
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
+            <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
+              <Wifi className="h-5 w-5 text-red-600" /> Configuração do Wi-Fi
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-zinc-500">
               Estes dados são exibidos no modal de Wi-Fi para que os clientes na loja copiem a senha
               com facilidade.
             </p>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
                   Nome da Rede (SSID)
                 </label>
                 <input
@@ -765,7 +636,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
                   Senha do Wi-Fi
                 </label>
                 <input
@@ -784,17 +655,20 @@ function Dashboard() {
         </div>
       )}
 
-      {/* TAB 3: Horários e Promoção */}
+      {/* SEÇÃO 3: Horários de Funcionamento */}
       {activeTab === "horarios" && (
         <div className="space-y-6">
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" /> Horário de Funcionamento
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
+            <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-red-600" /> Horário de Funcionamento
             </h2>
+            <p className="text-xs text-zinc-500">
+              Ajuste os horários semanais, do sábado, domingo e a pausa para almoço da equipe.
+            </p>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
                   Segunda a Sexta-feira
                 </label>
                 <input
@@ -810,9 +684,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                  Sábado
-                </label>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">Sábado</label>
                 <input
                   className={inputClass}
                   value={siteData.hours.saturday}
@@ -826,9 +698,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                  Domingo
-                </label>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">Domingo</label>
                 <input
                   className={inputClass}
                   value={siteData.hours.sunday}
@@ -842,7 +712,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
                   Pausa para Almoço
                 </label>
                 <input
@@ -860,12 +730,12 @@ function Dashboard() {
           </div>
 
           {/* Promoção de Destaque */}
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-4">
+          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" /> Promoção em Destaque
+              <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-red-600" /> Promoção em Destaque
               </h2>
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-zinc-700">
                 <input
                   type="checkbox"
                   checked={siteData.promotion.active}
@@ -875,14 +745,14 @@ function Dashboard() {
                       promotion: { ...siteData.promotion, active: e.target.checked },
                     })
                   }
-                  className="rounded border-border accent-primary h-4 w-4"
+                  className="rounded border-zinc-300 accent-red-600 h-4 w-4 cursor-pointer"
                 />
                 Ativar banner de promoção
               </label>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Texto Promocional
               </label>
               <input
@@ -900,16 +770,17 @@ function Dashboard() {
         </div>
       )}
 
-      {/* TAB 4: Serviços */}
+      {/* SEÇÃO 4: Serviços */}
       {activeTab === "servicos" && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-5">
-          <div className="flex items-center justify-between">
+        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Wrench className="h-5 w-5 text-primary" /> Serviços de Assistência Técnica
+              <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
+                <Wrench className="h-5 w-5 text-red-600" /> Serviços de Assistência Técnica
               </h2>
-              <p className="text-xs text-muted-foreground">
-                Adicione, edite ou desative os serviços exibidos no site.
+              <p className="text-xs text-zinc-500">
+                Adicione, edite dados, adicione ou substitua fotos individuais e controle a
+                visibilidade de cada serviço.
               </p>
             </div>
 
@@ -941,13 +812,13 @@ function Dashboard() {
             {siteData.services.map((service, index) => (
               <div
                 key={service.id}
-                className="rounded-2xl border border-border bg-secondary/40 p-4 transition hover:border-primary/50"
+                className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 transition hover:border-red-300"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1 space-y-3">
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
+                        <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
                           Nome do Serviço
                         </label>
                         <input
@@ -962,8 +833,8 @@ function Dashboard() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
-                          Preço anunciado
+                        <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
+                          Preço Anunciado
                         </label>
                         <input
                           className={inputClass}
@@ -979,7 +850,7 @@ function Dashboard() {
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
+                      <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
                         Descrição
                       </label>
                       <input
@@ -993,47 +864,78 @@ function Dashboard() {
                       />
                     </div>
 
-                    {/* Image URL & Upload */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex-1">
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
-                          URL da Imagem (ou envie uma foto)
-                        </label>
-                        <input
-                          className={inputClass}
-                          placeholder="/src/assets/repair.jpg ou link externo"
-                          value={service.imageUrl || ""}
-                          onChange={(e) => {
-                            const updated = [...siteData.services];
-                            updated[index] = { ...service, imageUrl: e.target.value };
-                            setSiteData({ ...siteData, services: updated });
-                          }}
-                        />
-                      </div>
-
-                      <label className="mt-5 inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-2 text-xs font-semibold hover:border-primary">
-                        <Upload className="h-3.5 w-3.5" /> Enviar foto
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              handleUploadImage(file, (url) => {
-                                const updated = [...siteData.services];
-                                updated[index] = { ...service, imageUrl: url };
-                                setSiteData({ ...siteData, services: updated });
-                              });
-                            }
-                          }}
-                        />
+                    {/* Foto individual do serviço: preview, URL, upload e remoção */}
+                    <div className="rounded-xl border border-zinc-200 bg-white p-3 space-y-2">
+                      <label className="block text-[11px] font-semibold text-zinc-700">
+                        Foto do Serviço
                       </label>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        {service.imageUrl ? (
+                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
+                            <img
+                              src={service.imageUrl}
+                              alt={service.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-400">
+                            <Wrench className="h-5 w-5" />
+                          </div>
+                        )}
+
+                        <div className="flex-1 min-w-[200px]">
+                          <input
+                            className={inputClass}
+                            placeholder="Link da imagem ou envie pelo botão"
+                            value={service.imageUrl || ""}
+                            onChange={(e) => {
+                              const updated = [...siteData.services];
+                              updated[index] = { ...service, imageUrl: e.target.value };
+                              setSiteData({ ...siteData, services: updated });
+                            }}
+                          />
+                        </div>
+
+                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-red-500 hover:text-red-600 transition">
+                          <Upload className="h-3.5 w-3.5" /> Enviar foto
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleUploadImage(file, (url) => {
+                                  const updated = [...siteData.services];
+                                  updated[index] = { ...service, imageUrl: url };
+                                  setSiteData({ ...siteData, services: updated });
+                                });
+                              }
+                            }}
+                          />
+                        </label>
+
+                        {service.imageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...siteData.services];
+                              updated[index] = { ...service, imageUrl: "" };
+                              setSiteData({ ...siteData, services: updated });
+                            }}
+                            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 transition"
+                          >
+                            <X className="h-3.5 w-3.5" /> Remover
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Toggles */}
                     <div className="flex flex-wrap items-center gap-4 pt-1">
-                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold">
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-zinc-700">
                         <input
                           type="checkbox"
                           checked={service.active}
@@ -1042,12 +944,12 @@ function Dashboard() {
                             updated[index] = { ...service, active: e.target.checked };
                             setSiteData({ ...siteData, services: updated });
                           }}
-                          className="rounded border-border accent-primary h-3.5 w-3.5"
+                          className="rounded border-zinc-300 accent-red-600 h-3.5 w-3.5 cursor-pointer"
                         />
                         Exibir no site
                       </label>
 
-                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold">
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-zinc-700">
                         <input
                           type="checkbox"
                           checked={service.highlight}
@@ -1056,7 +958,7 @@ function Dashboard() {
                             updated[index] = { ...service, highlight: e.target.checked };
                             setSiteData({ ...siteData, services: updated });
                           }}
-                          className="rounded border-border accent-primary h-3.5 w-3.5"
+                          className="rounded border-zinc-300 accent-red-600 h-3.5 w-3.5 cursor-pointer"
                         />
                         Destaque promocional
                       </label>
@@ -1073,7 +975,8 @@ function Dashboard() {
                         });
                       }
                     }}
-                    className="self-end sm:self-start rounded-lg p-2 text-muted-foreground hover:bg-red-500/10 hover:text-red-400 transition"
+                    className="self-end sm:self-start rounded-lg p-2 text-zinc-400 hover:bg-red-50 hover:text-red-600 transition"
+                    title="Excluir serviço"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -1084,16 +987,17 @@ function Dashboard() {
         </div>
       )}
 
-      {/* TAB 5: Celulares & Acessórios */}
+      {/* SEÇÃO 5: Produtos */}
       {activeTab === "produtos" && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-5">
-          <div className="flex items-center justify-between">
+        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Smartphone className="h-5 w-5 text-primary" /> Celulares e Acessórios
+              <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
+                <Smartphone className="h-5 w-5 text-red-600" /> Celulares e Acessórios
               </h2>
-              <p className="text-xs text-muted-foreground">
-                Cadastre ou atualize fotos e descrições dos produtos da loja.
+              <p className="text-xs text-zinc-500">
+                Cadastre ou atualize fotos individuais, categorias e descrições dos produtos da
+                loja.
               </p>
             </div>
 
@@ -1123,14 +1027,14 @@ function Dashboard() {
             {siteData.products.map((product, index) => (
               <div
                 key={product.id}
-                className="rounded-2xl border border-border bg-secondary/40 p-4 transition hover:border-primary/50"
+                className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 transition hover:border-red-300"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1 space-y-3">
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
-                          Nome
+                        <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
+                          Nome do Produto
                         </label>
                         <input
                           className={inputClass}
@@ -1144,7 +1048,7 @@ function Dashboard() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
+                        <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
                           Categoria
                         </label>
                         <select
@@ -1164,7 +1068,7 @@ function Dashboard() {
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
+                      <label className="block text-[11px] font-semibold text-zinc-600 mb-1">
                         Descrição
                       </label>
                       <input
@@ -1178,45 +1082,77 @@ function Dashboard() {
                       />
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex-1">
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
-                          URL da Imagem
-                        </label>
-                        <input
-                          className={inputClass}
-                          value={product.imageUrl || ""}
-                          placeholder="/src/assets/store.jpg ou link externo"
-                          onChange={(e) => {
-                            const updated = [...siteData.products];
-                            updated[index] = { ...product, imageUrl: e.target.value };
-                            setSiteData({ ...siteData, products: updated });
-                          }}
-                        />
-                      </div>
-
-                      <label className="mt-5 inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-secondary px-3 py-2 text-xs font-semibold hover:border-primary">
-                        <Upload className="h-3.5 w-3.5" /> Enviar foto
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              handleUploadImage(file, (url) => {
-                                const updated = [...siteData.products];
-                                updated[index] = { ...product, imageUrl: url };
-                                setSiteData({ ...siteData, products: updated });
-                              });
-                            }
-                          }}
-                        />
+                    {/* Foto individual do produto: preview, URL, upload e remoção */}
+                    <div className="rounded-xl border border-zinc-200 bg-white p-3 space-y-2">
+                      <label className="block text-[11px] font-semibold text-zinc-700">
+                        Foto do Produto
                       </label>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        {product.imageUrl ? (
+                          <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-400">
+                            <Smartphone className="h-5 w-5" />
+                          </div>
+                        )}
+
+                        <div className="flex-1 min-w-[200px]">
+                          <input
+                            className={inputClass}
+                            value={product.imageUrl || ""}
+                            placeholder="Link da imagem ou envie pelo botão"
+                            onChange={(e) => {
+                              const updated = [...siteData.products];
+                              updated[index] = { ...product, imageUrl: e.target.value };
+                              setSiteData({ ...siteData, products: updated });
+                            }}
+                          />
+                        </div>
+
+                        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-red-500 hover:text-red-600 transition">
+                          <Upload className="h-3.5 w-3.5" /> Enviar foto
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleUploadImage(file, (url) => {
+                                  const updated = [...siteData.products];
+                                  updated[index] = { ...product, imageUrl: url };
+                                  setSiteData({ ...siteData, products: updated });
+                                });
+                              }
+                            }}
+                          />
+                        </label>
+
+                        {product.imageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...siteData.products];
+                              updated[index] = { ...product, imageUrl: "" };
+                              setSiteData({ ...siteData, products: updated });
+                            }}
+                            className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 transition"
+                          >
+                            <X className="h-3.5 w-3.5" /> Remover
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div>
-                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold">
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-zinc-700">
                         <input
                           type="checkbox"
                           checked={product.active}
@@ -1225,7 +1161,7 @@ function Dashboard() {
                             updated[index] = { ...product, active: e.target.checked };
                             setSiteData({ ...siteData, products: updated });
                           }}
-                          className="rounded border-border accent-primary h-3.5 w-3.5"
+                          className="rounded border-zinc-300 accent-red-600 h-3.5 w-3.5 cursor-pointer"
                         />
                         Exibir no site
                       </label>
@@ -1242,7 +1178,8 @@ function Dashboard() {
                         });
                       }
                     }}
-                    className="self-end sm:self-start rounded-lg p-2 text-muted-foreground hover:bg-red-500/10 hover:text-red-400 transition"
+                    className="self-end sm:self-start rounded-lg p-2 text-zinc-400 hover:bg-red-50 hover:text-red-600 transition"
+                    title="Excluir produto"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -1253,21 +1190,20 @@ function Dashboard() {
         </div>
       )}
 
-      {/* TAB 6: Atendimento em Domicílio */}
+      {/* SEÇÃO 6: Atendimento em Domicílio */}
       {activeTab === "domicilio" && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-5">
+        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Home className="h-5 w-5 text-primary" /> Atendimento em Domicílio ("Torres Cell vai
-                até você")
+              <h2 className="text-xl font-bold text-zinc-950 flex items-center gap-2">
+                <Home className="h-5 w-5 text-red-600" /> Atendimento em Domicílio
               </h2>
-              <p className="text-xs text-muted-foreground">
-                Mantenha a seção ativa ou desative-a caso o proprietário não ofereça esse serviço.
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Configure textos, regiões atendidas e a foto da seção "Torres Cell vai até você".
               </p>
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer text-sm font-bold">
+            <label className="flex items-center gap-2 cursor-pointer text-sm font-bold text-zinc-900">
               <input
                 type="checkbox"
                 checked={siteData.homeService.active}
@@ -1277,7 +1213,7 @@ function Dashboard() {
                     homeService: { ...siteData.homeService, active: e.target.checked },
                   })
                 }
-                className="rounded border-border accent-primary h-4 w-4"
+                className="rounded border-zinc-300 accent-red-600 h-4 w-4 cursor-pointer"
               />
               Seção Ativa
             </label>
@@ -1285,7 +1221,7 @@ function Dashboard() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Título da Seção
               </label>
               <input
@@ -1301,7 +1237,7 @@ function Dashboard() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Etiqueta / Subtítulo
               </label>
               <input
@@ -1317,9 +1253,7 @@ function Dashboard() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Descrição
-              </label>
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">Descrição</label>
               <input
                 className={inputClass}
                 value={siteData.homeService.description}
@@ -1333,7 +1267,7 @@ function Dashboard() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Bairros Atendidos (separados por vírgula)
               </label>
               <input
@@ -1354,220 +1288,78 @@ function Dashboard() {
               />
             </div>
 
-            <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
-              <div className="flex-1">
-                <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                  Foto da Seção
-                </label>
-                <input
-                  className={inputClass}
-                  placeholder="/src/assets/delivery.jpg ou URL"
-                  value={siteData.homeService.imageUrl || ""}
-                  onChange={(e) =>
-                    setSiteData({
-                      ...siteData,
-                      homeService: { ...siteData.homeService, imageUrl: e.target.value },
-                    })
-                  }
-                />
-              </div>
-
-              <label className="mt-5 inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-secondary px-4 py-2.5 text-xs font-semibold hover:border-primary">
-                <Upload className="h-4 w-4" /> Enviar foto
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      handleUploadImage(file, (url) => {
-                        setSiteData({
-                          ...siteData,
-                          homeService: { ...siteData.homeService, imageUrl: url },
-                        });
-                      });
-                    }
-                  }}
-                />
+            {/* Foto da seção de Atendimento em Domicílio */}
+            <div className="sm:col-span-2 rounded-xl border border-zinc-200 bg-white p-3 space-y-2">
+              <label className="block text-[11px] font-semibold text-zinc-700">
+                Foto da Seção em Domicílio
               </label>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* TAB 7: Galeria de Fotos */}
-      {activeTab === "galeria" && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Upload className="h-5 w-5 text-primary" /> Galeria de Fotos da Loja
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Envie fotos reais de aparelhos, serviços concluídos e da loja.
-              </p>
-            </div>
+              <div className="flex flex-wrap items-center gap-3">
+                {siteData.homeService.imageUrl ? (
+                  <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100">
+                    <img
+                      src={siteData.homeService.imageUrl}
+                      alt="Atendimento em Domicílio"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-400">
+                    <Home className="h-5 w-5" />
+                  </div>
+                )}
 
-            <label
-              className={`${btnPrimary} cursor-pointer ${
-                uploading ? "opacity-60 pointer-events-none" : ""
-              }`}
-            >
-              <Plus className="h-4 w-4" /> {uploading ? "Processando Foto..." : "Enviar Nova Foto"}
-              <input
-                type="file"
-                accept="image/*"
-                disabled={uploading}
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    handleUploadImage(file, async (url) => {
-                      const newPhoto: Photo = {
-                        id: `photo-${Date.now()}`,
-                        title: file.name.replace(/\.[^/.]+$/, ""),
-                        category: "geral",
-                        url,
-                      };
-                      const updatedPhotos = [newPhoto, ...(siteData.photos || [])];
-                      const updatedSiteData = {
-                        ...siteData,
-                        photos: updatedPhotos,
-                      };
-                      setSiteData(updatedSiteData);
-                      await saveSiteData(updatedSiteData);
-                    });
-                  }
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          </div>
-
-          {/* Grid of photos */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {(siteData.photos || []).map((photo) => (
-              <div
-                key={photo.id}
-                className="group relative overflow-hidden rounded-2xl border border-border bg-secondary"
-              >
-                <div className="aspect-square w-full overflow-hidden">
-                  <img
-                    src={photo.url}
-                    alt={photo.title}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-2.5">
+                <div className="flex-1 min-w-[200px]">
                   <input
-                    className="w-full bg-transparent text-xs font-semibold outline-none focus:text-primary truncate"
-                    value={photo.title}
-                    placeholder="Título da foto"
-                    onChange={(e) => {
-                      const updated = (siteData.photos || []).map((p) =>
-                        p.id === photo.id ? { ...p, title: e.target.value } : p,
-                      );
-                      setSiteData({ ...siteData, photos: updated });
-                    }}
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (confirm("Remover esta imagem?")) {
+                    className={inputClass}
+                    placeholder="Link da imagem ou envie pelo botão"
+                    value={siteData.homeService.imageUrl || ""}
+                    onChange={(e) =>
                       setSiteData({
                         ...siteData,
-                        photos: (siteData.photos || []).filter((p) => p.id !== photo.id),
-                      });
+                        homeService: { ...siteData.homeService, imageUrl: e.target.value },
+                      })
                     }
-                  }}
-                  aria-label="Excluir foto"
-                  className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-lg bg-background/80 text-primary opacity-0 transition group-hover:opacity-100 hover:bg-background"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
+                  />
+                </div>
 
-          {(!siteData.photos || siteData.photos.length === 0) && (
-            <div className="rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
-              <Upload className="mx-auto h-8 w-8 text-muted-foreground/50 mb-2" />
-              <p className="text-sm font-medium">Nenhuma foto adicionada à galeria ainda.</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Clique no botão acima para fazer upload de imagens reais.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-700 hover:border-red-500 hover:text-red-600 transition">
+                  <Upload className="h-3.5 w-3.5" /> Enviar foto
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleUploadImage(file, (url) => {
+                          setSiteData({
+                            ...siteData,
+                            homeService: { ...siteData.homeService, imageUrl: url },
+                          });
+                        });
+                      }
+                    }}
+                  />
+                </label>
 
-      {/* TAB 8: Segurança & Senha */}
-      {activeTab === "seguranca" && (
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-card space-y-6">
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Lock className="h-5 w-5 text-primary" /> Segurança & Alteração de Senha
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Altere a senha de acesso ao painel administrativo da Torres Cell.
-            </p>
-          </div>
-
-          <form onSubmit={handlePasswordChange} className="max-w-md space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Senha Atual
-              </label>
-              <input
-                className={inputClass}
-                type="password"
-                required
-                value={currPass}
-                onChange={(e) => setCurrPass(e.target.value)}
-                placeholder="••••••••"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1">
-                Nova Senha (mínimo 6 caracteres)
-              </label>
-              <input
-                className={inputClass}
-                type="password"
-                required
-                minLength={6}
-                value={newPass}
-                onChange={(e) => setNewPass(e.target.value)}
-                placeholder="••••••••"
-              />
-            </div>
-
-            {passMsg && (
-              <div
-                className={`flex items-center gap-2 rounded-xl p-3 text-xs font-semibold ${
-                  passMsg.type === "success"
-                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-                    : "bg-red-500/15 text-red-400 border border-red-500/30"
-                }`}
-              >
-                {passMsg.type === "success" ? (
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
-                ) : (
-                  <AlertCircle className="h-4 w-4 shrink-0" />
+                {siteData.homeService.imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSiteData({
+                        ...siteData,
+                        homeService: { ...siteData.homeService, imageUrl: "" },
+                      })
+                    }
+                    className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-xs font-medium text-zinc-600 hover:border-red-400 hover:text-red-600 transition"
+                  >
+                    <X className="h-3.5 w-3.5" /> Remover
+                  </button>
                 )}
-                <span>{passMsg.text}</span>
               </div>
-            )}
-
-            <button type="submit" className={btnPrimary}>
-              <Lock className="h-4 w-4" /> Atualizar Senha
-            </button>
-          </form>
+            </div>
+          </div>
         </div>
       )}
     </div>

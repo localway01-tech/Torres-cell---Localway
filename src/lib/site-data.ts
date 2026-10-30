@@ -78,6 +78,13 @@ export interface Photo {
   url: string;
 }
 
+export interface InstagramPost {
+  id: string;
+  imageUrl: string;
+  postUrl: string;
+  caption?: string;
+}
+
 export interface SiteData {
   company: CompanyData;
   pix: PixData;
@@ -88,6 +95,7 @@ export interface SiteData {
   services: ServiceItem[];
   products: ProductItem[];
   photos: Photo[];
+  instagramPosts?: InstagramPost[];
 }
 
 export type Links = {

@@ -38,31 +38,30 @@
 
 :root {
   --radius: 1rem;
-  /* #171717 carvão, #292929 grafite, #F20D18 vermelho */
-  --background: oklch(0.205 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.275 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.275 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.6 0.24 27);
-  --primary-glow: oklch(0.68 0.22 25);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.32 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.3 0 0);
-  --muted-foreground: oklch(0.75 0 0);
-  --accent: oklch(0.6 0.24 27 / 15%);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.6 0.24 27);
-  --destructive-foreground: oklch(1 0 0);
-  --whatsapp: oklch(0.62 0.17 150);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.6 0.24 27);
-  --gradient-red: linear-gradient(135deg, var(--primary), oklch(0.48 0.2 25));
-  --shadow-red: 0 12px 40px -12px oklch(0.6 0.24 27 / 55%);
-  --shadow-card: 0 20px 50px -25px oklch(0 0 0 / 80%);
+  --background: #ffffff;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #dc2626;
+  --primary-glow: #ef4444;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: #fef2f2;
+  --accent-foreground: #991b1b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --whatsapp: #16a34a;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #dc2626;
+  --gradient-red: linear-gradient(135deg, #dc2626, #b91c1c);
+  --shadow-red: 0 10px 25px -5px rgba(220, 38, 38, 0.25);
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }
 
 @layer base {
@@ -71,9 +70,10 @@
   }
   html {
     scroll-behavior: smooth;
+    background-color: #ffffff;
   }
   body {
-    background-color: var(--color-background);
+    background-color: #ffffff;
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
@@ -95,14 +95,7 @@
   box-shadow: var(--shadow-card);
 }
 @utility circuit-bg {
-  background-image:
-    radial-gradient(circle at 50% -10%, oklch(0.6 0.24 27 / 28%), transparent 55%),
-    linear-gradient(oklch(1 0 0 / 3%) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(1 0 0 / 3%) 1px, transparent 1px);
-  background-size:
-    100% 100%,
-    36px 36px,
-    36px 36px;
+  background-color: #ffffff;
 }
 
 @keyframes float {

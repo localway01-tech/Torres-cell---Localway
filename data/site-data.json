@@ -3,7 +3,7 @@
     "name": "Torres Cell",
     "brandSlogan": "Qualidade e Honestidade",
     "slogan": "Seu celular em boas mãos. Tecnologia, cuidado e confiança em um só lugar.",
-    "description": "Assistência técnica especializada e venda de celulares e acessórios",
+    "description": "",
     "whatsappNumber": "5585984137001",
     "instagram": "https://www.instagram.com/torres_cell_0/",
     "googleReview": "https://search.google.com/local/writereview?placeid=ChIJnQ6LDtNJxwcRNg098V5g_hY",
@@ -160,5 +160,43 @@
       "imageUrl": ""
     }
   ],
-  "photos": []
+  "photos": [],
+  "instagramPosts": [
+    {
+      "id": "post-1",
+      "imageUrl": "",
+      "postUrl": "https://www.instagram.com/torres_cell_0/",
+      "caption": "Atendimento presencial na loja com cliente satisfeito"
+    },
+    {
+      "id": "post-2",
+      "imageUrl": "",
+      "postUrl": "https://www.instagram.com/torres_cell_0/",
+      "caption": "Troca de tela com precisão e película 3D inclusa"
+    },
+    {
+      "id": "post-3",
+      "imageUrl": "",
+      "postUrl": "https://www.instagram.com/torres_cell_0/",
+      "caption": "Aparelho recuperado e cliente com celular novo em folha"
+    },
+    {
+      "id": "post-4",
+      "imageUrl": "",
+      "postUrl": "https://www.instagram.com/torres_cell_0/",
+      "caption": "Atendimento em domicílio nos bairros de Fortaleza"
+    },
+    {
+      "id": "post-5",
+      "imageUrl": "",
+      "postUrl": "https://www.instagram.com/torres_cell_0/",
+      "caption": "Substituição de conector de carga e bateria de alta qualidade"
+    },
+    {
+      "id": "post-6",
+      "imageUrl": "",
+      "postUrl": "https://www.instagram.com/torres_cell_0/",
+      "caption": "Entrega rápida e transparência em cada detalhe"
+    }
+  ]
 }
